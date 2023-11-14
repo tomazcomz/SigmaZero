@@ -14,3 +14,8 @@
 
     - Terça: 15-17
     - Sexta: 14-16 
+
+# Anna:
+
+    - Quarta: 11-13
+    - Sexta: 15-17
