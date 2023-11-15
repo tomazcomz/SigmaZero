@@ -8,7 +8,7 @@
 
 # Vicente e Gonçalo:
 
-    - Terça: 9-11
+    - Terça: 11-13
 
 # Tomaz:
 
@@ -19,3 +19,8 @@
 
     - Quarta: 11-13
     - Sexta: 15-17
+
+# Vicente:
+
+    - Segunda: 15-17
+    - Quarta: 14-16
