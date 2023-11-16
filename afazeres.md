@@ -8,7 +8,7 @@
 
 # Vicente e Gonçalo:
 
-    - Terça: 9-11
+    - Terça: 11-11h45
 
 # Tomaz:
 
@@ -19,3 +19,16 @@
 
     - Quarta: 11-13
     - Sexta: 15-17
+
+# Vicente:
+
+    - Segunda: 15-17
+    - Terça: 11h45-13
+    - Quarta: 14-16
+
+# Gonçalo:
+
+    - Terça: 16h30-17h45
+    - Quinta: 8-9
+    - Sexta: 15-16
+    - Domingo: 15-17 (se houver alteração, eu aviso)
