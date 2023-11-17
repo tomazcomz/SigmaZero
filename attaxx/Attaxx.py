@@ -282,7 +282,7 @@ def readBoard(ficheiro):
     #pede ao user para escolher o tabuleiro que pretende usar
 def chooseBoard():
         #todos os ficheiros com tabuleiros devem ter nome do tipo "tabX.txt"
-        tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n1) 10x10\n2) 8x8\n3) 6x6\n4) 5x5\n5) 12x12\nTabuleiro: ")
+        tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n1) 4x4\n3) 6x6\nTabuleiro: ")
         table = "tab"+tableNum+".txt"
         return table
     
