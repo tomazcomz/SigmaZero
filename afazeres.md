@@ -22,9 +22,9 @@
 
 # Vicente:
 
-    - Segunda: 15-17
     - Terça: 11h45-13
     - Quarta: 14-16
+    - Quinta: 15-17
 
 # Gonçalo:
 
