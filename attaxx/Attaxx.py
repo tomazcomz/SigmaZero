@@ -41,7 +41,7 @@ class GameState:
                                 newState.parent = self
                                 self.children.append(newState)
     
-def final_move(game,board,play,player):     #### função que checka se o estado não tem children
+def final_move(game,board,play,player):     #### função que verifica se o estado não tem children
         #print(player,'final')
         gamenp=np.array(board)
         #print(gamenp,'nparray')
@@ -213,7 +213,7 @@ def jogo_Humano_Humano(game, screen):
 
                 #verificar se o jogador está cercado / não tem jogadas possiveis e tem de passar a jogada
                 if not skip(game,player_id):
-                    #escolher a peca para jogar e as possiveis plays
+                    #escolher a peça para jogar e as possíveis plays
                     if event.type == pygame.MOUSEBUTTONDOWN and clickState == False:
                         drawBoard(game, screen)
                         coord = mousePos(game)
