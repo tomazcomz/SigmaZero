@@ -20,10 +20,10 @@ class GameState:
         for i in range(1,self.n-1):
             for j in range(1,self.n-1):
                 if not self.has_liberties(i,j):
-                    pass    # finish this
+                    pass    #doing this
                     
-    def has_liberties(self,i,j):    # do this next
-        pass
+    def has_liberties(self,i,j):        # returns True if the given position is part of a group with liberties and False if the group is captured
+        return flood_fill(i,j,self.board)
                 
 
         
@@ -40,7 +40,7 @@ def ask_board_size():
         
 def main():
     n = ask_board_size()
-    initial_board = [[0 for i in range(n)] for j in range(n)]     # initializing an empty board of size (n x n)
+    initial_board = np.zeros((n,n), dtype=int)     # initializing an empty board of size (n x n)
     captured_pieces = {'black':0, 'white':0}                      # indicates the amount of pieces captured by each player
     initial_state = GameState(initial_board,captured_pieces,0)
     
@@ -52,3 +52,4 @@ main()
 # white -> -1
 # play ends when both players pass
 # scoring: captured territories, stones and komi
+# implementing positional superko rule?
