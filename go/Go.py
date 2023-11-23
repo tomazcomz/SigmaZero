@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
 
+
 class GameState:
     def __init__(self,board,captured_pieces,play_idx,pass_count=0):
         self.n = len(board)             # number of rows and columns
