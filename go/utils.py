@@ -37,7 +37,7 @@ def flood_fill_example():
     col = 2
     color = -1
 
-    result = not flood_fill(row, col, color, board)
+    result = not _flood_fill(row, col, color, board)
     print(f'Is the position ({row}, {col}) part of a captured group?\n -> {result}')
 
 flood_fill_example()
