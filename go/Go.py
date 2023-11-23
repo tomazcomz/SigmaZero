@@ -37,12 +37,38 @@ def ask_board_size():
         print("Invalid input. Write 1 or 2.")
         n = ask_board_size()
     return n
+
+def setScreen():
+        width = 800
+        height = 800
+        screen = pygame.display.set_mode((width, height))
+        pygame.display.set_caption("Go")
+        return screen
+
+def drawBoard(game, screen):
+        screen.fill((255,255,255)) #background branco
+
+        #desenha frame do tabuleiro
+        pygame.draw.line(screen, (0,0,0), (0,0), (800,0), 2)
+        pygame.draw.line(screen, (0,0,0), (0,0), (0,800), 2)
+        pygame.draw.line(screen, (0,0,0), (0,798), (800,798), 2)
+        pygame.draw.line(screen, (0,0,0), (798, 0), (798,800), 2)
+
+        #desenha linhas do tabuleiro
+        for i in range(1,game.n):
+            #linhas verticais
+            pygame.draw.line(screen, (0,0,0), (800*i/game.n,0), (800*i/game.n,800), 2)
+            #linhas horizontais
+            pygame.draw.line(screen, (0,0,0), (0,800*i/game.n), (800,800*i/game.n), 2)
         
 def main():
     n = ask_board_size()
-    initial_board = np.zeros((n,n), dtype=int)     # initializing an empty board of size (n x n)
+    initial_board = np.zeros(n, n)     # initializing an empty board of size (n x n)
     captured_pieces = {'black':0, 'white':0}                      # indicates the amount of pieces captured by each player
     initial_state = GameState(initial_board,captured_pieces,0)
+    pygame.init()
+    screen = setScreen()
+    drawBoard(initial_state, screen)
     
     
 main()
