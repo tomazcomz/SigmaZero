@@ -18,10 +18,10 @@ class GameState:
         scores = {'black':0, 'white':0}
         for i in range(1,self.n-1):
             for j in range(1,self.n-1):
-                if self.captured_position(i,j):
+                if not self.has_liberties(i,j):
                     pass    # finish this
                     
-    def captured_position(self,i,j):    # do this next
+    def has_liberties(self,i,j):    # do this next
         pass
                 
 
@@ -48,6 +48,6 @@ main()
 
 # black plays first
 # black -> 1
-# white -> 2
+# white -> -1
 # play ends when both players pass
 # scoring: captured territories, stones and komi
