@@ -11,19 +11,29 @@ def flood_fill(i,j,stone_color,board,visited=set()):    # returns True if this p
         return False            # this position has an opposing piece to the original position being checked
 
     neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]        # if this position has the same piece as the original position, its neighbors will be checked
-    return not all(not flood_fill(i, j, board, visited) for i,j in neighbors)   # returns True if at least one adjacent position to the group of the same color has a liberty
+    for i,j in neighbors:
+        result = flood_fill(i,j,board,visited)
+        if rsult:
+            return True
+    return False
+    # return True in neighbors_results
+    # return not all(not flood_fill(i, j, board, visited) for i,j in neighbors)   # returns True if at least one adjacent position to the group of the same color has a liberty
 
 
-# Example usage:
-board = [
-    [0, 0, 0, 0],
-    [0, 0, 1, 0],
-    [0, 1, 2, 0],
-    [0, 0, 1, 0]
-]
+def flood_fill_example():
+    # Example usage:
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 1, 0],
+        [0, 1, -1, 0],
+        [0, 0, 1, 0]
+    ]
 
-row = 2
-col = 2
+    row = 2
+    col = 2
+    color = -1
 
-result = not flood_fill(row, col, board)
-print(f'Is the position ({row}, {col}) part of a captured group?\n -> {result}')
+    result = not flood_fill(row, col, color, board)
+    print(f'Is the position ({row}, {col}) part of a captured group?\n -> {result}')
+
+flood_fill_example()
