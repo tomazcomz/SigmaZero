@@ -22,10 +22,10 @@ class GameState:
         for i in range(1,self.n-1):
             for j in range(1,self.n-1):
                 if self.captured_group_size(i,j)>0:
-                    pass
+                    pass    # continue from here
                     
-                    
-    def captured_group_size(self,i,j):        # returns 0 if this position isn't captured, otherwise returns the size of the captured group this position belongs to
+    # returns 0 if this position isn't captured, otherwise returns the size of the captured group this position belongs to
+    def captured_group_size(self,i,j):
         return flood_fill(i,j,self.board)
                 
         
