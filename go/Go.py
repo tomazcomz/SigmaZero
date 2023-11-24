@@ -4,10 +4,11 @@ from utils import flood_fill
 
 
 class GameState:
-    def __init__(self,board,captured_pieces,play_idx,pass_count=0):
+    def __init__(self,board,turn,captured_pieces,play_idx,pass_count=0):
         self.n = len(board)             # number of rows and columns
         self.board = board
         self.captured_pieces = captured_pieces
+        self.turn = turn                # who's playing next
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
         self.komi = 0
@@ -24,7 +25,7 @@ class GameState:
                     pass
                     
                     
-    def captured_group_size(self,i,j):        # returns 0 if this position isn't captured, otherwise returns the size of the group
+    def captured_group_size(self,i,j):        # returns 0 if this position isn't captured, otherwise returns the size of the captured group this position belongs to
         return flood_fill(i,j,self.board)
                 
         
@@ -65,9 +66,9 @@ def drawBoard(game, screen):
     
 def main():
     n = ask_board_size()
-    initial_board = np.zeros(n, n)     # initializing an empty board of size (n x n)
+    initial_board = np.zeros((n, n))     # initializing an empty board of size (n x n)
     captured_pieces = {'black':0, 'white':0}                      # indicates the amount of pieces captured by each player
-    initial_state = GameState(initial_board,captured_pieces,0)
+    initial_state = GameState(initial_board,1,captured_pieces,0)
     pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)
