@@ -21,3 +21,5 @@ on the board (matching the local structure of convolutional networks), and are r
 reflectionally symmetric (allowing for data augmentation and ensembling). Furthermore, the
 action space is simple (a stone may be placed at each possible location), and the game outcomes
 are restricted to binary wins or losses, both of which may help neural network training."  - talvez usar numpy array para a eventualidade de inverter/rodar matrizes
+
+quando se da input de um estado à rede neuronal, dar tambem input as suas rotacoes e simetrias
