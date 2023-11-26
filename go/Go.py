@@ -17,15 +17,19 @@ class GameState:
         if self.pass_count == 2:
             return True
         
-    def get_scoring(self):          # scoring: captured territories + stones + komi
-        scores = {'black':0, 'white':0}
+    def get_scores(self):          # scoring: captured territories + player's stones + komi
+        visited = [[False for i in range(self.n)] for j in range(self.n)]
+        scores = {1:0, -1:0}
         for i in range(1,self.n-1):
             for j in range(1,self.n-1):
-                if self.captured_group_size(i,j)>0:
-                    pass    # continue from here
+                captured_group = self.captured_group(i,j)
+                if captured_group is not None:
+                    scores[self.board[i][j]] += len(captured_group)
+                                    
+        scores[-1] += self.komi
                     
-    # returns 0 if this position isn't captured, otherwise returns the size of the captured group this position belongs to
-    def captured_group_size(self,i,j):
+    # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
+    def captured_group(self,i,j):
         return flood_fill(i,j,self.board)
                 
         
