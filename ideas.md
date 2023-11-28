@@ -13,3 +13,13 @@ Self/Opponent vs Black/White
 Tromp-Taylor rules
 concisas: https://webdocs.cs.ualberta.ca/~hayward/396/hoven/tromptaylor.pdf
 explicadas com exemplos: https://webdocs.cs.ualberta.ca/~hayward/355/gorules.pdf
+
+# Poupar Tempo:
+
+    - Usar Java em TreeSearch
+    - Tirar PyGame e prints
+
+# MCTS:
+    
+    - Não excluir jogadas legais nem as que são postas nos 'eyes' do próprio jogador
+    - Parâmetros do MCTS são inicializados por otimização Gaussiana : 'so as to optimizeselfplay performance of AlphaGo Zero using a neural network trained in apreliminary run. For the larger run (40 blocks, 40 days), MCTS search parameters were reoptimized using the neural network trained in the smaller run(20 blocks, 3 days)'
