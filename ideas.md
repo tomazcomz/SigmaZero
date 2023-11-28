@@ -14,6 +14,26 @@ Tromp-Taylor rules
 concisas: https://webdocs.cs.ualberta.ca/~hayward/396/hoven/tromptaylor.pdf
 explicadas com exemplos: https://webdocs.cs.ualberta.ca/~hayward/355/gorules.pdf
 
+"Go is well suited to the neural network architecture used in AlphaGo because the rules of
+the game are translationally invariant (matching the weight sharing structure of convolutional
+networks), are defined in terms of liberties corresponding to the adjacencies between points
+on the board (matching the local structure of convolutional networks), and are rotationally and
+reflectionally symmetric (allowing for data augmentation and ensembling). Furthermore, the
+action space is simple (a stone may be placed at each possible location), and the game outcomes
+are restricted to binary wins or losses, both of which may help neural network training."  - talvez usar numpy array para a eventualidade de inverter/rodar matrizes
+
+quando se da input de um estado à rede neuronal, dar tambem input as suas rotacoes e simetrias
+
+"Go is well suited to the neural network architecture used in AlphaGo because the rules of
+the game are translationally invariant (matching the weight sharing structure of convolutional
+networks), are defined in terms of liberties corresponding to the adjacencies between points
+on the board (matching the local structure of convolutional networks), and are rotationally and
+reflectionally symmetric (allowing for data augmentation and ensembling). Furthermore, the
+action space is simple (a stone may be placed at each possible location), and the game outcomes
+are restricted to binary wins or losses, both of which may help neural network training."  - talvez usar numpy array para a eventualidade de inverter/rodar matrizes
+
+quando se da input de um estado à rede neuronal, dar tambem input as suas rotacoes e simetrias
+
 # Poupar Tempo:
 
     - Usar Java em TreeSearch
