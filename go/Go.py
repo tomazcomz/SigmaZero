@@ -124,10 +124,10 @@ def showSelected(game, screen, coord, turn):
                 selectedCellRGB = (144,238,144) #verde claro
             pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
 
-def executeMov(game, targetCell, player_id):
+def executeMov(game, targetCell, turn):
         newBoard = cp.deepcopy(game.board)
-        newBoard[targetCell[1]][targetCell[0]] = player_id
-        #newBoard = check_for_captures(targetCell, newBoard, player_id)
+        newBoard[targetCell[1]][targetCell[0]] = turn
+        #newBoard = check_for_captures(targetCell, newBoard, turn)
         newGame = GameState(newBoard)
         return newGame
 
@@ -156,7 +156,7 @@ def jogo_Humano_Humano(game, screen):
                     elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
                         targetCell = mousePos(game)
                         prevBoard = cp.deepcopy(game.board)
-                        game = executeMov(game, coord, targetCell, selected, turn)
+                        game = executeMov(game, targetCell, turn)
                         if not (np.array_equal(prevBoard,game.board)):
                             turn = switchPlayer(turn)
                         clickState=False
