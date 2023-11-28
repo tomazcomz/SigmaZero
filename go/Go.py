@@ -1,5 +1,6 @@
 import pygame
 import numpy as np
+import copy as cp
 from utils import flood_fill
 
 
@@ -12,6 +13,7 @@ class GameState:
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
         self.komi = 0
+        self.end = -1
     
     def is_game_finished(self):
         if self.pass_count == 2:
@@ -31,6 +33,13 @@ class GameState:
     # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
     def captured_group(self,i,j):
         return flood_fill(i,j,self.board)
+    
+    def is_full(self):      #might delete later
+        for i in range(self.n):
+            for j in range(self.n):
+                if self.board[i][j] == 0:
+                     return False
+        return True
                 
         
 def ask_board_size():
@@ -66,6 +75,123 @@ def drawBoard(game, screen):
         pygame.draw.line(screen, (0,0,0), (800*i/game.n,0), (800*i/game.n,800), 2)
         #linhas horizontais
         pygame.draw.line(screen, (0,0,0), (0,800*i/game.n), (800,800*i/game.n), 2)
+
+def drawPieces(game, screen):
+        n = game.n
+        for i in range(n):
+            for j in range(n):
+                #desenha peças do jogador 1
+                if j==2 and i==3:  #random test values, replace soon
+                    pygame.draw.circle(screen, (0,0,255), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
+                #desenha peças do jogador 2
+                if j==1 and i==1:   #random test values, replace soon
+                    pygame.draw.circle(screen, (0,150,0), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
+                #desenha quadrados onde não se pode jogar
+                if j==0 and i==1:   #random test values, replace soon
+                    pygame.draw.rect(screen, (0,0,0), (800*i/n, 800*j/n, 800/n + 1, 800/n + 1))
+
+def drawResult(game, screen):
+        if game.end == -1:
+            return None
+        font = pygame.font.Font('freesansbold.ttf', 32)
+        pygame.draw.rect(screen, (0,0,0), (120, 240, 560, 320))
+        pygame.draw.rect(screen, (255,255,255), (140, 260, 520, 280))
+        if game.end == 0:
+            text = font.render("Empate!", True, (0,0,0))
+        elif game.end == 1:
+            text = font.render("Jogador 1 vence!", True, (0,0,255))
+        elif game.end == 2:
+            text = font.render("Jogador 2 vence!", True, (0,150,0))
+        text_rect = text.get_rect(center=(400, 400))
+        screen.blit(text, text_rect)
+
+def mousePos(game):
+        click = pygame.mouse.get_pos()   
+        i = int(click[0]*game.n/800)
+        j = int(click[1]*game.n/800)
+        coord=(i,j)
+        return coord
+
+def showSelected(game, screen, coord, turn):
+        n = len(game.board)
+        i=coord[0]
+        j=coord[1]
+        if game.board[j][i] == turn:
+            #desenha as cell possiveis de se jogar do player id
+            if turn == 1:
+                selectedCellRGB  = (173,216,230) #azul claro
+            elif turn == 2:
+                selectedCellRGB = (144,238,144) #verde claro
+            pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
+
+def executeMov(game, targetCell, player_id):
+        newBoard = cp.deepcopy(game.board)
+        newBoard[targetCell[1]][targetCell[0]] = player_id
+        #newBoard = check_for_captures(targetCell, newBoard, player_id)
+        newGame = GameState(newBoard)
+        return newGame
+
+def jogo_Humano_Humano(game, screen):
+        turn = 1
+        clickState = False
+        while game.end==-1:
+            drawPieces(game, screen)
+            events = pygame.event.get()
+            for event in events:
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit()
+
+                #verificar se o jogador está cercado / não tem jogadas possiveis e tem de passar a jogada
+                if not game.is_full():
+                    #escolher a peça para jogar e as possíveis plays
+                    if event.type == pygame.MOUSEBUTTONDOWN and clickState == False:
+                        drawBoard(game, screen)
+                        coord = mousePos(game)
+                        selected = showSelected(game, screen, coord, turn)
+                        clickState = True
+                        drawPieces(game, screen)
+
+                    #fazer o movimento da jogada
+                    elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
+                        targetCell = mousePos(game)
+                        prevBoard = cp.deepcopy(game.board)
+                        game = executeMov(game, coord, targetCell, selected, turn)
+                        if not (np.array_equal(prevBoard,game.board)):
+                            turn = switchPlayer(turn)
+                        clickState=False
+                        drawBoard(game, screen)
+                        drawPieces(game, screen)
+                else:
+                    game.end = objective_test(game,turn)
+
+            #to display the winner
+            while game.end != -1:
+                drawResult(game,screen)
+                events = pygame.event.get()
+                for event in events:
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        exit()
+                pygame.display.update()
+            pygame.display.update()
+
+def switchPlayer(turn):
+        return 3-turn
+
+def objective_test(game,player): #atualizar count
+    if np.count_nonzero(game.board==(3-player))==0:
+        return player
+    if np.count_nonzero(game.board==0) != 0:
+                return -1
+    if np.count_nonzero(game.board==0) == 0:  
+        count_p=np.count_nonzero(game.board==player)
+        count_o=np.count_nonzero(game.board==(3-player))
+        if count_p > count_o:
+            return player
+        if count_o > count_p:
+            return (3-player)
+    return 0
     
     
 def main():
@@ -85,3 +211,4 @@ main()
 # play ends when both players pass
 # implementing positional superko rule?
 # limite de jogadas: n*n*2
+# definir funcao check_for_captures
