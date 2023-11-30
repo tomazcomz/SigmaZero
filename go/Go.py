@@ -43,6 +43,9 @@ class GameState:
         if self.pass_count == 2:
             return True
         
+    def get_winner(self):
+         return 1 # TEMPORARY
+     
     def get_scores(self):      # scoring: captured territories + stones (?) + komi
         visited = [[False for i in range(self.n)] for j in range(self.n)]
         scores = {1:0, -1:0}
@@ -51,8 +54,6 @@ class GameState:
         scores[-1] += captured_territories[0] + self.komi
         return scores
     
-    def get_winner(self):
-         return 1 # TEMPORARY
 
     def captured_territories_count(self):   # returns how many captured territories each player has
         ct_count = {1:0, -1:0}
