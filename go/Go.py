@@ -22,19 +22,27 @@ class GameState:
     def get_scores(self):          # scoring: captured territories + player's stones + komi
         visited = [[False for i in range(self.n)] for j in range(self.n)]
         scores = {1:0, -1:0}
-        for i in range(1,self.n-1):
-            for j in range(1,self.n-1):
-                captured_group = self.captured_group(i,j)
-                if captured_group is not None:
-                    scores[self.board[i][j]] += len(captured_group)
-                                    
+        
         scores[-1] += self.komi
+        
                     
     # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
     def captured_group(self,i,j):
         return flood_fill(i,j,self.board)
     
-    def is_full(self):      #might delete later
+    def check_for_captures(self):
+        for i in range(self.n):
+            for j in range(self.n):
+                if self.board[i][j] == 0:
+                    continue
+                captured_group = self.captured_group(i,j)
+                if captured_group is not None:
+                    for (x,y) in captured_group:
+                        self.captured_pieces[-self.board[x][y]]+=1   # a player captures an opponent's piece
+                        self.board[x][y] = 0
+
+    
+    def is_full(self):      # might delete later
         for i in range(self.n):
             for j in range(self.n):
                 if self.board[i][j] == 0:
@@ -194,15 +202,19 @@ def objective_test(game,player): #atualizar count
     return 0
     
     
-def main():
+def initialize_game():
     n = ask_board_size()
     initial_board = np.zeros((n, n))     # initializing an empty board of size (n x n)
-    captured_pieces = {'black':0, 'white':0}                      # indicates the amount of pieces captured by each player
+    captured_pieces = {1:0, -1:0}        # indicates the amount of pieces captured by each player
     initial_state = GameState(initial_board,1,captured_pieces,0)
     pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)
+    return initial_state
     
+def main():
+    initial_state = initialize_game()
+        
 main()
 
 # black plays first
