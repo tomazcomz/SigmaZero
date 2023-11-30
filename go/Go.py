@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 import copy as cp
-from utils import flood_fill
+from utils import flood_fill, get_captured_territories
 
 
 class GameState:
@@ -15,21 +15,6 @@ class GameState:
         self.komi = 0
         self.end = -1
     
-    def is_game_finished(self):
-        if self.pass_count == 2:
-            return True
-        
-    def get_scores(self):          # scoring: captured territories + player's stones + komi
-        visited = [[False for i in range(self.n)] for j in range(self.n)]
-        scores = {1:0, -1:0}
-        
-        scores[-1] += self.komi
-        
-                    
-    # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
-    def captured_group(self,i,j):
-        return flood_fill(i,j,self.board)
-    
     def check_for_captures(self):
         for i in range(self.n):
             for j in range(self.n):
@@ -41,6 +26,10 @@ class GameState:
                         self.captured_pieces[-self.board[x][y]]+=1   # a player captures an opponent's piece
                         self.board[x][y] = 0
 
+    # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
+    def captured_group(self,i,j):
+        return flood_fill(i,j,self.board)
+    
     
     def is_full(self):      # might delete later
         for i in range(self.n):
@@ -49,6 +38,35 @@ class GameState:
                      return False
         return True
                 
+                
+    def is_game_finished(self):
+        if self.pass_count == 2:
+            return True
+        
+    def get_scores(self):      # scoring: captured territories + stones (?) + komi
+        visited = [[False for i in range(self.n)] for j in range(self.n)]
+        scores = {1:0, -1:0}
+        captured_territories = self.captured_territories_count()
+        scores[1] += captured_territories[1]
+        scores[-1] += captured_territories[0] + self.komi
+        return scores
+
+    def captured_territories_count(self):   # returns how many captured territories each player has
+        ct_count = {1:0, -1:0}
+        visited = set()     # saves territories that were counted before being visited by the following loops
+        for i in range(self.n):
+            for j in range(self.n):
+                piece = self.board[i][j]
+                if piece != 0:
+                    continue
+                ct_group, captor = get_captured_territories(i,j,self.board)
+                if ct_group is None:
+                    continue
+                for (x,y) in ct_group:
+                    visited.add((x,y))
+                    ct_count[captor] += 1
+        return ct_count
+    
         
 def ask_board_size():
     inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
@@ -211,7 +229,7 @@ def initialize_game():
     screen = setScreen()
     drawBoard(initial_state, screen)
     return initial_state
-    
+
 def main():
     initial_state = initialize_game()
         

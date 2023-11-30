@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def flood_fill(i,j,board):     # returns the captured group or None if there isn't one
     has_liberties, group_positions = _flood_fill(i,j,board[i][j],board)
     if has_liberties:
@@ -29,7 +30,6 @@ def _flood_fill(i,j,original_piece,board,group_positions=set(),visited=set()):
     group_positions.add((i,j))      # this position has a same color piece as the original position being checked and it has no liberties
     return False, group_positions
 
-
 def flood_fill_example():
     # Example usage:
     board = np.array([
@@ -46,6 +46,13 @@ def flood_fill_example():
     print(captured_group)
     if captured_group:
         print(len(captured_group))
+
+# returns the positions of the captured group (i,j) belongs to and which player is the captor. if (i,j) isn't captured, return None
+def get_captured_territories(i,j,board): 
+    ct_group = set()
+    captor = 0 ######
+    ######
+    return ct_group, captor
 
 
 flood_fill_example()
