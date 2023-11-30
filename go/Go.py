@@ -13,7 +13,7 @@ class GameState:
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
         self.komi = 0
-        self.end = -1
+        self.end = 0
     
     def check_for_captures(self):
         for i in range(self.n):
@@ -50,6 +50,9 @@ class GameState:
         scores[1] += captured_territories[1]
         scores[-1] += captured_territories[0] + self.komi
         return scores
+    
+    def get_winner(self):
+         return 1 # TEMPORARY
 
     def captured_territories_count(self):   # returns how many captured territories each player has
         ct_count = {1:0, -1:0}
@@ -142,57 +145,52 @@ def showSelected(game, screen, coord, turn):
         n = len(game.board)
         i=coord[0]
         j=coord[1]
-        if game.board[j][i] == turn:
-            #desenha as cell possiveis de se jogar do player id
-            if turn == 1:
-                selectedCellRGB  = (173,216,230) #azul claro
-            elif turn == 2:
-                selectedCellRGB = (144,238,144) #verde claro
-            pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
+        if turn == 1:
+            selectedCellRGB  = (173,216,230) #azul claro
+        elif turn == -1:
+            selectedCellRGB = (144,238,144) #verde claro
+        pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
 
 def executeMov(game, targetCell, turn):
         newBoard = cp.deepcopy(game.board)
         newBoard[targetCell[1]][targetCell[0]] = turn
-        #newBoard = check_for_captures(targetCell, newBoard, turn)
-        newGame = GameState(newBoard)
+        newGame = GameState(newBoard, switchPlayer(turn), game.captured_pieces, game.play_idx + 1)
         return newGame
 
 def jogo_Humano_Humano(game, screen):
         turn = 1
         clickState = False
-        while game.end==-1:
+        while game.end==0:
+            drawBoard(game, screen)
             drawPieces(game, screen)
-            events = pygame.event.get()
-            for event in events:
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
+            event = pygame.event.poll()
+            if event.type == pygame.QUIT:
+                game.end==game.get_winner()
+            #verificar se o jogador está cercado / não tem jogadas possiveis e tem de passar a jogada
+            if not game.is_full():
+                #escolher a peça para jogar e as possíveis plays
+                if event.type == pygame.MOUSEBUTTONDOWN and clickState == False:
+                    drawBoard(game, screen)
+                    coord = mousePos(game)
+                    showSelected(game, screen, coord, turn)
+                    clickState = True
+                    drawPieces(game, screen)
 
-                #verificar se o jogador está cercado / não tem jogadas possiveis e tem de passar a jogada
-                if not game.is_full():
-                    #escolher a peça para jogar e as possíveis plays
-                    if event.type == pygame.MOUSEBUTTONDOWN and clickState == False:
-                        drawBoard(game, screen)
-                        coord = mousePos(game)
-                        selected = showSelected(game, screen, coord, turn)
-                        clickState = True
-                        drawPieces(game, screen)
-
-                    #fazer o movimento da jogada
-                    elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
-                        targetCell = mousePos(game)
-                        prevBoard = cp.deepcopy(game.board)
-                        game = executeMov(game, targetCell, turn)
-                        if not (np.array_equal(prevBoard,game.board)):
-                            turn = switchPlayer(turn)
-                        clickState=False
-                        drawBoard(game, screen)
-                        drawPieces(game, screen)
-                else:
-                    game.end = objective_test(game,turn)
+                #fazer o movimento da jogada
+                elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
+                    targetCell = mousePos(game)
+                    prevBoard = cp.deepcopy(game.board)
+                    game = executeMov(game, targetCell, turn)
+                    if not (np.array_equal(prevBoard,game.board)):
+                        turn = switchPlayer(turn)
+                    clickState=False
+                    drawBoard(game, screen)
+                    drawPieces(game, screen)
+            else:
+                game.end = objective_test(game,turn)
 
             #to display the winner
-            while game.end != -1:
+            while game.end != 0:
                 drawResult(game,screen)
                 events = pygame.event.get()
                 for event in events:
@@ -203,7 +201,7 @@ def jogo_Humano_Humano(game, screen):
             pygame.display.update()
 
 def switchPlayer(turn):
-        return 3-turn
+        return turn*-1
 
 def objective_test(game,player): #atualizar count
     if np.count_nonzero(game.board==(3-player))==0:
@@ -228,6 +226,7 @@ def initialize_game():
     pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)
+    jogo_Humano_Humano(initial_state, screen)
     return initial_state
 
 def main():
@@ -242,3 +241,4 @@ main()
 # implementing positional superko rule?
 # limite de jogadas: n*n*2
 # definir funcao check_for_captures
+# definir funcao get_winner
