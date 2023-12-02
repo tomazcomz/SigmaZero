@@ -44,3 +44,4 @@ quando se da input de um estado à rede neuronal, dar tambem input as suas rotac
     - Não excluir jogadas legais nem as que são postas nos 'eyes' do próprio jogador
     - Parâmetros do MCTS são inicializados por otimização Gaussiana : 'so as to optimizeselfplay performance of AlphaGo Zero using a neural network trained in apreliminary run. For the larger run (40 blocks, 40 days), MCTS search parameters were reoptimized using the neural network trained in the smaller run(20 blocks, 3 days)'
     - APV-MCTS (ver resto destacado no pdf do paper original)
+    - "The original paper mentions that Dirichlet noise is added to prior probabilities for additional exploration in the self-play stage"
