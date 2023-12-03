@@ -43,15 +43,17 @@ class GameState:
         if self.pass_count == 2:
             return True
         
-    def get_winner(self):
-         return 1 # TEMPORARY
+    def get_winner(self):       # returns the player with the highest score
+        scores = self.get_scores()
+        return max(scores)
+        return 1 # TEMPORARY
      
-    def get_scores(self):      # scoring: captured territories + stones (?) + komi
+    def get_scores(self):      # scoring: captured territories + player's stones + komi
         scores = {1:0, -1:0}
         captured_territories = self.captured_territories_count()
-        # stones
-        scores[1] += captured_territories[1]
-        scores[-1] += captured_territories[0] + self.komi
+        n_stones = self.get_number_of_stones()
+        scores[1] += captured_territories[1] + n_stones[1]
+        scores[-1] += captured_territories[-1] + n_stones[-1] + self.komi
         return scores
     
     def captured_territories_count(self):   # returns how many captured territories each player has
@@ -69,6 +71,16 @@ class GameState:
                     visited.add((x,y))      # adding all of the group's position to visited
                     ct_count[captor] += 1   # incrementing the captor's count by one for each captured territory
         return ct_count
+
+    def get_number_of_stones(self):     # calculates the number of stones each player has on the board
+        n_stones = {1:0, -1:0}
+        for i in range(self.n):
+            for j in range(self.n):
+                stone = self.board[i][j]
+                if stone == 0:          # if position is empty, the method skips to the next iteration
+                    continue
+                n_stones[stone] += 1    # increments by one the number of stones for the player who holds this position
+        return n_stones
     
         
 def ask_board_size():
