@@ -47,28 +47,27 @@ class GameState:
          return 1 # TEMPORARY
      
     def get_scores(self):      # scoring: captured territories + stones (?) + komi
-        visited = [[False for i in range(self.n)] for j in range(self.n)]
         scores = {1:0, -1:0}
         captured_territories = self.captured_territories_count()
+        # stones
         scores[1] += captured_territories[1]
         scores[-1] += captured_territories[0] + self.komi
         return scores
     
-
     def captured_territories_count(self):   # returns how many captured territories each player has
         ct_count = {1:0, -1:0}
         visited = set()     # saves territories that were counted before being visited by the following loops
         for i in range(self.n):
             for j in range(self.n):
                 piece = self.board[i][j]
-                if piece != 0:
+                if piece != 0:      # if it's not an empty territory, the method skips to the next iteration
                     continue
-                ct_group, captor = get_captured_territories(i,j,self.board)
-                if ct_group is None:
+                ct_group, captor = get_captured_territories(i,j,self.board)     # gets the group of captured territories this position belongs to and its captor, if there is one
+                if ct_group is None:    # if this position isn't part of a group of captured territories, the method skips to the next iteration
                     continue
                 for (x,y) in ct_group:
-                    visited.add((x,y))
-                    ct_count[captor] += 1
+                    visited.add((x,y))      # adding all of the group's position to visited
+                    ct_count[captor] += 1   # incrementing the captor's count by one for each captured territory
         return ct_count
     
         

@@ -51,10 +51,21 @@ def flood_fill_example():
     if captured_group:
         print(len(captured_group))
 
+
 # returns the positions of the captured group (i,j) belongs to and which player is the captor. if (i,j) isn't captured, return None
 def get_captured_territories(i,j,board):
     ct_group, captor = _get_captured_territories(i,j,board)
     return ct_group, captor
+
+
+# Let A be a point connected to (through a path of adjacent positions) a black stone. 
+# Therefore, A does not belong to White's territory. 
+# Furthermore A is connected to B, which is adjacent to a white stone. 
+# Therefore, A does not belong to Black's territory either. 
+# In conclusion, A is neutral territory.
+
+# An empty point only belongs to somebody's territory, 
+#   if all the empty intersections that form a connected group with it are adjacent to stones of that player's territory.
 
 # recursive helper method that implements an algorithm that searches for a captured group of territories
 def _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set()):
@@ -65,33 +76,29 @@ def _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set()):
         if captor == 0:
             captor = board[i][j]     # getting the captor of this group, if there isn't one yet
             return ct_group, captor
-        elif board[i][j]!=captor:    # If there's two different captors to the group's positions, then
-            return None,0   # it returns None, because there's no group captured by one captor
+        elif board[i][j]!=captor:   # If there's two different captors to the group's positions, then
+            return None,0           # it returns None, because the group has links to both players' pieces, hence there's no group captured by one captor
         return ct_group, captor     # this piece is captured by the same captor as every piece in this group checked so far
     ct_group.add((i,j))  # if this position is empty, then it is added to the territory group
     neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]   # if (i,j) has the same piece as the original position, its neighbors will be checked
     for x,y in neighbors:
         ct_group,captor = _get_captured_territories(x,y,board,ct_group,captor,visited)
-    # (continue from here)
+        if ct_group is None:    # if (i,j) has links to pieces of different players
+            return None,0       #   then, there's no captured group of territories
+    return ct_group, captor     # if there is a captured group, it is returned alongside its captor
+    
     
 def get_captured_territories_example():
     board = np.array([
-        [0,-1,-1,0],
-        [-1,1,1,0],
-        [0,0,0,0],
-        [1,0,0,1]
+        [0,1,-1,1],
+        [1,0,1,0],
+        [1,0,0,1],
+        [0,1,1,0]
     ])
-    i=0
-    j=0
+    i=1
+    j=1
     ct_group, captor = _get_captured_territories(i,j,board)
     print(ct_group)
     print(f"captor: {captor}")
     
 get_captured_territories_example()
-
-
-# The point A is adjacent to a black stone. Therefore, A does not belong to White's territory. 
-# However, A is connected to B (by the path shown in the diagram, among others), which is adjacent to a white stone. 
-# Therefore, A does not belong to Black's territory either. In conclusion, A is neutral territory.
-# An empty point only belongs to somebody's territory, 
-#   if all the empty intersections that form a connected group with it are adjacent to stones of that player's territory
