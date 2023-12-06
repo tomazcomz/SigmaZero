@@ -5,21 +5,21 @@ from utils import flood_fill, get_captured_territories
 
 
 class GameState:
-    def __init__(self,board,turn,captured_pieces,play_idx,pass_count=0):
+    def __init__(self,board,komi=0):
         self.n = len(board)             # number of rows and columns
         self.board = board
-        self.captured_pieces = captured_pieces
-        self.turn = turn                # who's playing next
-        self.play_idx = play_idx        # how many overall plays occurred before this state
-        self.pass_count = pass_count    # counts the current streak of 'pass' plays
-        self.komi = 0
+        self.captured_pieces = {1:0, -1:0}     # indicates the amount of pieces captured by each player
+        self.turn = 1            # who's playing next
+        self.play_idx = 0        # how many overall plays occurred before this state
+        self.pass_count = 0      # counts the current streak of 'pass' plays
+        self.komi = komi
         self.end = 0
     
     def check_for_captures(self):
         for i in range(self.n):
             for j in range(self.n):
-                if self.board[i][j] == 0:
-                    continue
+                if self.board[i][j] != self.turn:
+                    continue    # only checks for captured pieces of the player who didn't make the last move
                 captured_group = self.captured_group(i,j)
                 if captured_group is not None:
                     for (x,y) in captured_group:
@@ -35,7 +35,7 @@ class GameState:
         for i in range(self.n):
             for j in range(self.n):
                 if self.board[i][j] == 0:
-                     return False
+                    return False
         return True
                 
                 
@@ -43,9 +43,11 @@ class GameState:
         if self.pass_count == 2:
             return True
         
-    def get_winner(self):       # returns the player with the highest score
+    def get_winner(self):       # returns the player with the highest score or 0, if it's a draw
         scores = self.get_scores()
-        return max(scores)
+        if scores[-1] == scores[1]:
+            return 0    # draw
+        return max(scores) 
         return 1 # TEMPORARY
      
     def get_scores(self):      # scoring: captured territories + player's stones + komi
@@ -81,6 +83,28 @@ class GameState:
                     continue
                 n_stones[stone] += 1    # increments by one the number of stones for the player who holds this position
         return n_stones
+    
+    def play(self):     # -> using pygame to choose a move (passing has to be included)
+        pass
+    
+    def move(self,i,j):     # placing a piece on the board
+        self.board[i][j] = self.turn
+        self.turn = -self.turn
+        self.check_for_captures()
+        self.play_idx += 1      # increments the play counter
+        self.pass_count = 0     # resets the consecutive pass counter
+        if self.is_game_finished():
+            self.end_game()
+        
+    def pass_turn(self):    # a player chooses to "pass"
+        self.turn = -self.turn
+        self.play_idx += 1      # increments the play counter
+        self.pass_count += 1    # increments the consecutive pass counter
+        if self.is_game_finished():
+            self.end_game()
+                 
+    def end_game(self):     # -> code what happens when the game finishes
+        pass
     
         
 def ask_board_size():
@@ -233,8 +257,7 @@ def objective_test(game,player): #atualizar count
 def initialize_game():
     n = ask_board_size()
     initial_board = np.zeros((n, n))     # initializing an empty board of size (n x n)
-    captured_pieces = {1:0, -1:0}        # indicates the amount of pieces captured by each player
-    initial_state = GameState(initial_board,1,captured_pieces,0)
+    initial_state = GameState(initial_board)
     pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)
