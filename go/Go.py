@@ -136,7 +136,7 @@ def setScreen():
         return screen
     
 def drawBoard(game, screen):
-    screen.fill((255,255,255)) #background branco
+    screen.fill((117,74,30)) #background castanho
 
     #desenha frame do tabuleiro
     pygame.draw.line(screen, (0,0,0), (0,0), (800,0), 2)
@@ -145,37 +145,34 @@ def drawBoard(game, screen):
     pygame.draw.line(screen, (0,0,0), (798, 0), (798,800), 2)
 
     #desenha linhas do tabuleiro
-    for i in range(1,game.n):
+    for i in range(0,game.n):
         #linhas verticais
-        pygame.draw.line(screen, (0,0,0), (800*i/game.n,0), (800*i/game.n,800), 2)
+        pygame.draw.line(screen, (156,113,40), (800*i/game.n + (800/game.n)/2,(800/game.n)/2), (800*i/game.n + (800/game.n)/2 ,800-(800/game.n)/2), 2)
         #linhas horizontais
-        pygame.draw.line(screen, (0,0,0), (0,800*i/game.n), (800,800*i/game.n), 2)
+        pygame.draw.line(screen, (156,113,40), ((800/game.n)/2,800*i/game.n + (800/game.n)/2), (800-(800/game.n)/2,800*i/game.n + (800/game.n)/2), 2)
 
 def drawPieces(game, screen):
         n = game.n
         for i in range(n):
             for j in range(n):
                 #desenha peças do jogador 1
-                if j==2 and i==3:  #random test values, replace soon
-                    pygame.draw.circle(screen, (0,0,255), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
+                if game.board[j][i] == 1:  #random test values, replace soon
+                    pygame.draw.circle(screen, (0,0,0), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
                 #desenha peças do jogador 2
-                if j==1 and i==1:   #random test values, replace soon
-                    pygame.draw.circle(screen, (0,150,0), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
-                #desenha quadrados onde não se pode jogar
-                if j==0 and i==1:   #random test values, replace soon
-                    pygame.draw.rect(screen, (0,0,0), (800*i/n, 800*j/n, 800/n + 1, 800/n + 1))
+                elif game.board[j][i]==-1:   #random test values, replace soon
+                    pygame.draw.circle(screen, (196,196,196), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
 
 def drawResult(game, screen):
-        if game.end == -1:
+        if game.end == 0:
             return None
         font = pygame.font.Font('freesansbold.ttf', 32)
         pygame.draw.rect(screen, (0,0,0), (120, 240, 560, 320))
         pygame.draw.rect(screen, (255,255,255), (140, 260, 520, 280))
-        if game.end == 0:
+        if game.end == 3:
             text = font.render("Empate!", True, (0,0,0))
         elif game.end == 1:
             text = font.render("Jogador 1 vence!", True, (0,0,255))
-        elif game.end == 2:
+        elif game.end == -1:
             text = font.render("Jogador 2 vence!", True, (0,150,0))
         text_rect = text.get_rect(center=(400, 400))
         screen.blit(text, text_rect)
@@ -187,25 +184,16 @@ def mousePos(game):
         coord=(i,j)
         return coord
 
-def showSelected(game, screen, coord, turn):
-        n = len(game.board)
-        i=coord[0]
-        j=coord[1]
-        if turn == 1:
-            selectedCellRGB  = (173,216,230) #azul claro
-        elif turn == -1:
-            selectedCellRGB = (144,238,144) #verde claro
-        pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
-
-def executeMov(game, targetCell, turn):
+'''def executeMov(game, targetCell, turn):
         newBoard = cp.deepcopy(game.board)
         newBoard[targetCell[1]][targetCell[0]] = turn
-        newGame = GameState(newBoard, switchPlayer(turn), game.captured_pieces, game.play_idx + 1)
-        return newGame
+        newGame = GameState(newBoard)
+        newGame.turn=switchPlayer(turn)
+        newGame.play_idx += 1
+        return newGame'''
 
 def jogo_Humano_Humano(game, screen):
         turn = 1
-        clickState = False
         while game.end==0:
             drawBoard(game, screen)
             drawPieces(game, screen)
@@ -215,21 +203,13 @@ def jogo_Humano_Humano(game, screen):
             #verificar se o jogador está cercado / não tem jogadas possiveis e tem de passar a jogada
             if not game.is_full():
                 #escolher a peça para jogar e as possíveis plays
-                if event.type == pygame.MOUSEBUTTONDOWN and clickState == False:
-                    drawBoard(game, screen)
-                    coord = mousePos(game)
-                    showSelected(game, screen, coord, turn)
-                    clickState = True
-                    drawPieces(game, screen)
-
-                #fazer o movimento da jogada
-                elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
+                if event.type == pygame.MOUSEBUTTONDOWN:
                     targetCell = mousePos(game)
                     prevBoard = cp.deepcopy(game.board)
-                    game = executeMov(game, targetCell, turn)
+                    #game = executeMov(game, targetCell, turn)
+                    game.move(targetCell[1],targetCell[0])
                     if not (np.array_equal(prevBoard,game.board)):
                         turn = switchPlayer(turn)
-                    clickState=False
                     drawBoard(game, screen)
                     drawPieces(game, screen)
             else:
