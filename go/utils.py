@@ -2,11 +2,10 @@ import numpy as np
 
 
 def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
-    return i < 0 or i >= n or j < 0 or j >= n
-
+        return i < 0 or i >= n or j < 0 or j >= n
 
 def flood_fill(i,j,board):     # returns the captured group or None if there isn't one
-    has_liberties, group_positions = _flood_fill(i,j,board[i][j],board)
+    has_liberties, group_positions = _flood_fill(i,j,board[i][j],board,group_positions=set(),_visited=set())
     if has_liberties:
         return None
     else:
@@ -14,11 +13,10 @@ def flood_fill(i,j,board):     # returns the captured group or None if there isn
 
 # helper method that returns True if this position or an adjacent position to this one has at least one adjacent empty position (liberty),
 # otherwise it returns False and also returns all the positions of the captured group to which the position (i,j) belongs
-def _flood_fill(i,j,original_piece,board,group_positions=set(),visited=set()):
-    if (i,j) in visited or invalid_position(i,j,len(board)):
+def _flood_fill(i,j,original_piece,board,group_positions,_visited):
+    if (i,j) in _visited or invalid_position(i,j,len(board)):
         return False, group_positions    # returns False if this position is out of bounds or was already visited
-
-    visited.add((i, j))
+    _visited.add((i, j))
     position = board[i][j]
 
     if position == 0:
@@ -27,8 +25,8 @@ def _flood_fill(i,j,original_piece,board,group_positions=set(),visited=set()):
         return False, group_positions           # this position has an opposing piece to the original position being checked
 
     neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]    # if (i,j) has the same piece as the original position, its neighbors will be checked
-    for i,j in neighbors:
-        result, group_positions = _flood_fill(i,j,original_piece,board,group_positions,visited)
+    for x,y in neighbors:
+        result, group_positions = _flood_fill(x,y,original_piece,board,group_positions,_visited)
         if result:
             return True, group_positions
     group_positions.add((i,j))      # this position has a same color piece as the original position being checked and it has no liberties
@@ -37,14 +35,17 @@ def _flood_fill(i,j,original_piece,board,group_positions=set(),visited=set()):
 def flood_fill_example():
     # Example usage:
     board = np.array([
-        [1, 1, -1, 0],
-        [-1, 1, 1, -1],
-        [1, -1, -1, 0],
-        [0, 0, 0, 0]
+        [0, 1, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, -1, 0, 0, 0],
+        [0, 0, -1, 1, -1, 0, 0],
+        [0, 0, 0, -1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0]
     ])
     
-    row = 1
-    col = 0
+    row = 3
+    col = 3
 
     captured_group = flood_fill(row, col, board)
     print(captured_group)
@@ -54,7 +55,7 @@ def flood_fill_example():
 
 # returns the positions of the captured group (i,j) belongs to and which player is the captor. if (i,j) isn't captured, return None
 def get_captured_territories(i,j,board):
-    ct_group, captor = _get_captured_territories(i,j,board)
+    ct_group, captor = _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set())
     return ct_group, captor
 
 
@@ -68,7 +69,7 @@ def get_captured_territories(i,j,board):
 #   if all the empty intersections that form a connected group with it are adjacent to stones of that player's territory.
 
 # recursive helper method that implements an algorithm that searches for a captured group of territories
-def _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set()):
+def _get_captured_territories(i,j,board,ct_group,captor,visited):
     if (i,j) in visited or invalid_position(i,j,len(board)):
         return ct_group, captor
     visited.add((i,j))
@@ -91,14 +92,16 @@ def _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set()):
 def get_captured_territories_example():
     board = np.array([
         [0,1,-1,1],
-        [1,0,1,0],
-        [1,0,0,1],
-        [0,1,1,0]
+        [1,0,-1,0],
+        [1,-1,0,-1],
+        [0,1,-1,0]
     ])
-    i=1
-    j=1
-    ct_group, captor = _get_captured_territories(i,j,board)
+    i=2
+    j=2
+    ct_group, captor = get_captured_territories(i,j,board)
     print(ct_group)
     print(f"captor: {captor}")
-    
-get_captured_territories_example()
+
+
+# flood_fill_example()
+# get_captured_territories_example()

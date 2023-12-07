@@ -1,11 +1,11 @@
 import pygame
 import numpy as np
 import copy as cp
-from utils import flood_fill, get_captured_territories
+from utils import flood_fill,get_captured_territories
 from copy import deepcopy
 
 
-class GameState:
+class Game:
     def __init__(self,board):
         self.n = len(board)             # number of rows and columns
         self.board = board
@@ -17,6 +17,7 @@ class GameState:
         self.end = 0             # indicates if the game has ended ({0,1})
         self.previous_moves = {1:None, -1:None}     # saves the previous move of each player
         self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])    # stores every empty position
+        
 
     def check_for_captures(self):
         player_checked = -self.turn
@@ -55,7 +56,7 @@ class GameState:
         scores = self.get_scores()
         if scores[-1] == scores[1]:
             return 0    # draw
-        return max(scores) 
+        return max(scores)
         return 1 # TEMPORARY
      
     def get_scores(self):      # scoring: captured territories + player's stones + komi
@@ -71,6 +72,8 @@ class GameState:
         visited = set()     # saves territories that were counted before being visited by the following loops
         for i in range(self.n):
             for j in range(self.n):
+                if (i,j) in visited:
+                    continue
                 piece = self.board[i][j]
                 if piece != 0:      # if it's not an empty territory, the method skips to the next iteration
                     continue
@@ -255,19 +258,36 @@ def ask_board_size():
         n = ask_board_size()
     return n
 
-
 def initialize_game():
     n = ask_board_size()
-    initial_board = np.zeros((n, n))     # initializing an empty board of size (n x n)
-    initial_state = GameState(initial_board)
-    pygame.init()
-    screen = setScreen()
-    drawBoard(initial_state, screen)
-    jogo_Humano_Humano(initial_state, screen)
-    return initial_state
+    initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
+    initial_state = Game(initial_board)
+    # pygame.init()
+    # screen = setScreen()
+    # drawBoard(initial_state, screen)
+    # jogo_Humano_Humano(initial_state, screen)
+    return initial_state    
+
+def human_vs_human_terminal():
+    game_state = initialize_game()
+    while game_state.end != 1:
+        print(game_state.board)
+        print()
+        inp = input(f"Player {game_state.turn}'s turn\nChoose your move by entering 'pass' or the coordinates of your move (in the form i,j):\n")
+        if inp == "pass":
+            game_state.pass_turn()
+        else:
+            game_state.move(int(inp[0]),int(inp[-1]))
+        print()
+    winner = game_state.get_winner()
+    if winner == 0:
+        print("\nGAME OVER\nIt's a draw!")
+    else:
+        print(f"\nGAME OVER\nPlayer {winner} wins!")
+
 
 def main():
-    initial_state = initialize_game()
+    human_vs_human_terminal()
         
 main()
 
