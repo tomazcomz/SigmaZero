@@ -2,29 +2,34 @@ import pygame
 import numpy as np
 import copy as cp
 from utils import flood_fill, get_captured_territories
+from copy import deepcopy
 
 
 class GameState:
-    def __init__(self,board,komi=0):
+    def __init__(self,board):
         self.n = len(board)             # number of rows and columns
         self.board = board
         self.captured_pieces = {1:0, -1:0}     # indicates the amount of pieces captured by each player
         self.turn = 1            # who's playing next
         self.play_idx = 0        # how many overall plays occurred before this state
         self.pass_count = 0      # counts the current streak of 'pass' plays
-        self.komi = komi
-        self.end = 0
-    
+        self.komi = 5.5          # predefined value to be added to white's score
+        self.end = 0             # indicates if the game has ended ({0,1})
+        self.previous_moves = {1:None, -1:None}     # saves the previous move of each player
+        self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])    # stores every empty position
+
     def check_for_captures(self):
+        player_checked = -self.turn
         for i in range(self.n):
             for j in range(self.n):
-                if self.board[i][j] != self.turn:
+                if self.board[i][j] != player_checked:
                     continue    # only checks for captured pieces of the player who didn't make the last move
                 captured_group = self.captured_group(i,j)
                 if captured_group is not None:
                     for (x,y) in captured_group:
                         self.captured_pieces[-self.board[x][y]]+=1   # a player captures an opponent's piece
                         self.board[x][y] = 0
+                        self.empty_positions.add((x,y))
 
     # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
     def captured_group(self,i,j):
@@ -40,8 +45,11 @@ class GameState:
                 
                 
     def is_game_finished(self):
-        if self.pass_count == 2:
+        if self.pass_count == 2:    # game ends if both players consecutively pass
             return True
+        if self.play_idx >= self.n**2*2:    # game ends if n*n*2 plays have occurred
+            return True
+        return False
         
     def get_winner(self):       # returns the player with the highest score or 0, if it's a draw
         scores = self.get_scores()
@@ -84,39 +92,41 @@ class GameState:
                 n_stones[stone] += 1    # increments by one the number of stones for the player who holds this position
         return n_stones
     
+    def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule
+        possible_moves = deepcopy(self.empty_positions)
+        if self.previous_moves(self.turn) is not None:
+            possible_moves.remove(self.previous_moves(self.turn))
+        return possible_moves
+        
+    
     def play(self):     # -> using pygame to choose a move (passing has to be included)
         pass
     
-    def move(self,i,j):     # placing a piece on the board
+    def move(self,i,j):         # placing a piece on the board
         self.board[i][j] = self.turn
-        self.turn = -self.turn
         self.check_for_captures()
         self.play_idx += 1      # increments the play counter
         self.pass_count = 0     # resets the consecutive pass counter
+        self.previous_moves[self.turn] = (i,j)
+        self.turn = -self.turn
+        self.empty_positions.remove((i,j))
         if self.is_game_finished():
             self.end_game()
         
-    def pass_turn(self):    # a player chooses to "pass"
-        self.turn = -self.turn
+    def pass_turn(self):        # a player chooses to "pass"
         self.play_idx += 1      # increments the play counter
         self.pass_count += 1    # increments the consecutive pass counter
+        self.previous_moves[self.turn] = None   # saves this player's move
+        self.turn = -self.turn
         if self.is_game_finished():
             self.end_game()
                  
-    def end_game(self):     # -> code what happens when the game finishes
-        pass
+    def end_game(self):     # -> code what happens when the game finishes using pygame
+        #####
+        self.winner = self.get_winner()
+        self.end = 1
     
-        
-def ask_board_size():
-    inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
-    if inp == 1:
-        n=7
-    elif inp == 2:
-        n=9
-    else:
-        print("Invalid input. Write 1 or 2.")
-        n = ask_board_size()
-    return n
+
         
 def setScreen():
         width = 800
@@ -253,7 +263,19 @@ def objective_test(game,player): #atualizar count
             return (3-player)
     return 0
     
-    
+            
+def ask_board_size():
+    inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
+    if inp == 1:
+        n=7
+    elif inp == 2:
+        n=9
+    else:
+        print("Invalid input. Write 1 or 2.")
+        n = ask_board_size()
+    return n
+
+
 def initialize_game():
     n = ask_board_size()
     initial_board = np.zeros((n, n))     # initializing an empty board of size (n x n)
@@ -273,7 +295,7 @@ main()
 # black -> 1
 # white -> -1
 # play ends when both players pass
-# implementing positional superko rule?
+# implementing positional superko rule
 # limite de jogadas: n*n*2
 # definir funcao check_for_captures
 # definir funcao get_winner
