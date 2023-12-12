@@ -1,11 +1,12 @@
 import pygame
 import numpy as np
 import copy as cp
-from utils import flood_fill, get_captured_territories
+from go.utils import flood_fill, get_captured_territories
 
 
 class GameState:
     def __init__(self,board,turn,captured_pieces,play_idx,pass_count=0):
+        self.type=1
         self.n = len(board)             # number of rows and columns
         self.board = board
         self.captured_pieces = captured_pieces
@@ -159,8 +160,8 @@ def showSelected(game, screen, coord, turn):
         j=coord[1]
         if turn == 1:
             selectedCellRGB  = (173,216,230) #azul claro
-        elif turn == -1:
-            selectedCellRGB = (144,238,144) #verde claro
+        elif turn == -1:                    # pessoal bora trocar para branco e preto?
+            selectedCellRGB = (144,238,144) #verde claro 
         pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
 
 def executeMov(game, targetCell, turn):
@@ -235,10 +236,10 @@ def initialize_game():
     initial_board = np.zeros((n, n))     # initializing an empty board of size (n x n)
     captured_pieces = {1:0, -1:0}        # indicates the amount of pieces captured by each player
     initial_state = GameState(initial_board,1,captured_pieces,0)
-    pygame.init()
+    """ pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)
-    jogo_Humano_Humano(initial_state, screen)
+    jogo_Humano_Humano(initial_state, screen) """
     return initial_state
 
 def main():
