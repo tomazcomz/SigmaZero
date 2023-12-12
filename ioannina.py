@@ -23,14 +23,13 @@ Train:
 """
 class Neura:
     def __init__(self,n_resblocks,game):        # loss function and learning rate?
-        self.action_dim=2
         self.input(game)
         self.build(n_resblocks)
     
     def input(self,game):
         if (game.type==0):
             self.state_dim=2
-            self.inpt=layers.Input((len(game.board),len(game.board[0])))
+            self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
         else:
             self.state_dim=3
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
@@ -38,36 +37,36 @@ class Neura:
 
     # Se calhar devíamos adaptar o kernel size, devido as dimensões do tabuleiro
     def convblock(self,input):
-        c=layers.Conv2D(256,(3,3),(1,1))(input)
+        c=layers.Conv2D(256,3,(1,1),'same')(input)
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         return rnl
 
     def resblock(self,input):
         cb=self.convblock(input)
-        c=layers.Conv2D(256,(3,3),(1,1))(cb)
+        c=layers.Conv2D(256,3,(1,1),'same')(cb)
         b=layers.BatchNormalization()(c)
         s=layers.Add()([b,input])
         rnl=layers.Activation(activation='softplus')(s)
         return rnl
 
-    def polhead(input):
-        c=layers.Conv2D(2,(1,1),(1,1))(input)
+    def polhead(self,input):
+        c=layers.Conv2D(2,1,(1,1),'same')(input)
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         flt=layers.Flatten()(rnl)
-        fc=layers.Dense()(flt)       #output of 362 flatten?
-        return fc
+        #fc=layers.Dense()(flt)       #output of 362 flatten?
+        return flt
 
-    def valhead(input):
-        c=layers.Conv2D(1,(1,1),(1,1))(input)
+    def valhead(self,input):
+        c=layers.Conv2D(1,1,(1,1),'same')(input)
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         # A fully connected linear layer to a hidden layer of size 256
         flt=layers.Flatten()(rnl)
         fcl=layers.Dense(256)(flt)
         rnl2=layers.Activation(activation='softplus')(fcl)
-        fcs=layers.Dense()(rnl2)        # flatten?!
+        fcs=layers.Flatten()(rnl2)        # flatten?!
         tanh=layers.Activation(activation='tanh')(fcs)
         return tanh
     
@@ -83,7 +82,7 @@ class Neura:
         polh=self.polhead(restower)
         valh=self.valhead(restower)
         outputs=[polh,valh]
-        self.net=Model(self.inpts,outputs)
+        self.net=Model(self.inpt,outputs)
         return
 
     def summary(self):

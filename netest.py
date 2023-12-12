@@ -1,8 +1,8 @@
-import Go
 from ioannina import Neura
+import Attaxx
 
 def main():
-    go=Go.initialize_game()
+    go=Attaxx.main()
     rede=Neura(19,go)
     rede.summary()
     return

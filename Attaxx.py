@@ -10,6 +10,7 @@ import time
 
 class GameState:
     def __init__(self, board):
+        self.type=0
         self.board = board
         self.end=-1
         self.children = []
@@ -283,16 +284,17 @@ def readBoard(ficheiro):
 def chooseBoard():
         #todos os ficheiros com tabuleiros devem ter nome do tipo "tabX.txt"
         tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n1) 4x4\n3) 6x6\nTabuleiro: ")
-        table = "tab"+tableNum+".txt"
+        table = "attaxx/tab"+tableNum+".txt"
         return table
     
 def main():
         table = chooseBoard()
-        pygame.init()
-        screen = setScreen()
+        """ pygame.init()
+        screen = setScreen() """
         game = readBoard(table)
-        drawBoard(game, screen)
-        jogo_Humano_Humano(game, screen)
+        """ drawBoard(game, screen)
+        jogo_Humano_Humano(game, screen) """
+        return game
 
 start_time = time.time()
 main()
