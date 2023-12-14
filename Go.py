@@ -137,7 +137,7 @@ def setScreen():
         return screen
     
 def drawBoard(game, screen):
-    screen.fill((244,164,96))    # background castanho
+    screen.fill((220,191,137))    # background
 
     #desenha frame do tabuleiro
     pygame.draw.line(screen, (0,0,0), (0,0), (800,0), 2)
@@ -161,27 +161,52 @@ def drawPieces(game, screen):
                 pygame.draw.circle(screen, (0,0,0), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
             # draws white pieces
             elif game.board[j][i]==-1:
-                pygame.draw.circle(screen, (196,196,196), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
+                pygame.draw.circle(screen, (255,255,255), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
 
 def drawResult(game, screen):
     if game.end == 0:
         return None
-    font = pygame.font.Font('freesansbold.ttf', 32)
     pygame.draw.rect(screen, (0,0,0), (120, 240, 560, 320))
     pygame.draw.rect(screen, (255,255,255), (140, 260, 520, 280))
+    font = pygame.font.Font('freesansbold.ttf', 32)
     result,scores = game.winner,game.scores
     if result == 0:
         text = font.render("Draw!", True, (0,0,0))
-    elif result == 1:
-        text = font.render("Player 1 (black) wins!\nScore: Black - White", True, (0,0,255))
-    elif result == 2:
-        text = font.render("Player 2 (white) wins!\nScore: Black - White", True, (0,150,0))
+    elif result == 1 or result == 2:
+        result_text(screen,result,scores)
+        return
     else:
         text = font.render("ERROR", True, (100, 0, 0))
         print(f"Unexpected result: {result}")
     text_rect = text.get_rect(center=(400, 400))
     screen.blit(text, text_rect)
+    
+def result_text(screen,result,scores):
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    color = {1:"white",2:"black"}
+    text_lines = [
+        "Player " + str(result) + " (" + str(color[result]) + ") wins!",
+        "",
+        "Score: Black " + str(scores[1]) + " - " + str(scores[-1]) + " White"
+    ]
+    # Render text surfaces
+    text_surfaces = [font.render(line, True, (0,0,0)) for line in text_lines]
 
+    # Calculate text box dimensions
+    text_box_width = max(surface.get_width() for surface in text_surfaces)
+    text_box_height = sum(surface.get_height() for surface in text_surfaces)
+
+    width,height=800,800
+    # Set up text box position
+    text_box_x = (width - text_box_width) // 2
+    text_box_y = (height - text_box_height) // 2
+    
+    y_offset = 0
+    for surface in text_surfaces:
+        screen.blit(surface, (text_box_x, text_box_y + y_offset))
+        y_offset += surface.get_height()
+        
+        
 def mousePos(game):
     click = pygame.mouse.get_pos()   
     i = int(click[0]*game.n/800)
@@ -227,13 +252,13 @@ def human_v_human(game, screen):
         # to display the winner
         if game.end != 0:
             drawResult(game,screen)
-            time.sleep(1)
             events = pygame.event.get()
             for event in events:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
             pygame.display.update()
+            time.sleep(4)
         pygame.display.update()
 
             
