@@ -58,7 +58,6 @@ def get_captured_territories(i,j,board):
     ct_group, captor = _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set())
     return ct_group, captor
 
-
 # Let A be a point connected to (through a path of adjacent positions) a black stone. 
 # Therefore, A does not belong to White's territory. 
 # Furthermore A is connected to B, which is adjacent to a white stone. 
