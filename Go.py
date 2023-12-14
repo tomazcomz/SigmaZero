@@ -31,6 +31,7 @@ class Game:
             self.end_game()
         
     def pass_turn(self):        # a player chooses to "pass"
+        self.check_for_captures()
         self.play_idx += 1      # increments the play counter
         self.pass_count += 1    # increments the consecutive pass counter
         self.previous_moves[self.turn] = None   # saves this player's move
@@ -41,11 +42,19 @@ class Game:
     def is_move_valid(self,i,j):
         return (i,j) in self.check_possible_moves()
             
-    def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule
+    def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
         possible_moves = deepcopy(self.empty_positions)
         prev_move = self.previous_moves[self.turn]
         if prev_move is not None and prev_move in possible_moves:
             possible_moves.remove(prev_move)
+        # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide
+        moves_to_be_removed = set()
+        for move in possible_moves:
+            i,j=move
+            if self.is_suicide(i,j):
+                moves_to_be_removed.add(move)
+        for move in moves_to_be_removed:
+            possible_moves.remove(move)
         return possible_moves
         
     def check_for_captures(self):
@@ -247,6 +256,7 @@ def human_v_human(game, screen):
             game.move(i,j)
             if not (np.array_equal(prevBoard,game.board)):
                 turn = switchPlayer(turn)
+            time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
         # to display the winner
