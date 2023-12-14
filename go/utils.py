@@ -76,10 +76,16 @@ def _get_captured_territories(i,j,board,ct_group,captor,visited):
     if board[i][j] != 0:    # if this position isn't empty, it checks whose player it belongs to
         if captor == 0:
             captor = board[i][j]     # getting the captor of this group, if there isn't one yet
-            return ct_group, captor
+            if captor == 1:
+                return ct_group, "p1"
+            elif captor == -1:
+                return ct_group, "p2"
         elif board[i][j]!=captor:   # If there's two different captors to the group's positions, then
             return None,0           # it returns None, because the group has links to both players' pieces, hence there's no group captured by one captor
-        return ct_group, captor     # this piece is captured by the same captor as every piece in this group checked so far
+        if captor == 1:
+            return ct_group, "p1"     # this piece is captured by the same captor as every piece in this group checked so far
+        elif captor == -1:
+            return ct_group, "p2"
     ct_group.add((i,j))  # if this position is empty, then it is added to the territory group
     neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]   # if (i,j) has the same piece as the original position, its neighbors will be checked
     for x,y in neighbors:

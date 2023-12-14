@@ -9,13 +9,13 @@ class Game:
     def __init__(self,board):
         self.n = len(board)             # number of rows and columns
         self.board = board
-        self.captured_pieces = {1:0, -1:0}     # indicates the amount of pieces captured by each player
+        self.captured_pieces = {"p1":0, "p2":0}     # indicates the amount of pieces captured by each player
         self.turn = 1            # who's playing next
         self.play_idx = 0        # how many overall plays occurred before this state
         self.pass_count = 0      # counts the current streak of 'pass' plays
         self.komi = 5.5          # predefined value to be added to white's score
         self.end = 0             # indicates if the game has ended ({0,1})
-        self.previous_moves = {1:None, -1:None}     # saves the previous move of each player
+        self.previous_moves = {"p1":None, "p2":None}     # saves the previous move of each player
         self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])    # stores every empty position
         
 
@@ -35,40 +35,34 @@ class Game:
     # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
     def captured_group(self,i,j):
         return flood_fill(i,j,self.board)
-    
-    
-    def is_full(self):      # might delete later
-        for i in range(self.n):
-            for j in range(self.n):
-                if self.board[i][j] == 0:
-                    return False
-        return True
-                
-                
+       
     def is_game_finished(self):
         if self.pass_count == 2:    # game ends if both players consecutively pass
             return True
-        if self.play_idx >= self.n**2*2:    # game ends if n*n*2 plays have occurred
+        if self.play_idx >= self.n*2*2:    # game ends if n*n*2 plays have occurred
             return True
         return False
         
     def get_winner(self):       # returns the player with the highest score or 0, if it's a draw
         scores = self.get_scores()
-        if scores[-1] == scores[1]:
+        print(scores)
+        if scores["p1"] == scores["p2"]:
             return 0    # draw
-        return max(scores)
-        return 1 # TEMPORARY
+        elif scores["p1"] > scores["p2"]:
+            return 1
+        else:
+            return 2
      
     def get_scores(self):      # scoring: captured territories + player's stones + komi
-        scores = {1:0, -1:0}
+        scores = {"p1":0, "p2":0}
         captured_territories = self.captured_territories_count()
         n_stones = self.get_number_of_stones()
-        scores[1] += captured_territories[1] + n_stones[1]
-        scores[-1] += captured_territories[-1] + n_stones[-1] + self.komi
+        scores["p1"] += captured_territories["p1"] + n_stones["p1"]
+        scores["p2"] += captured_territories["p2"] + n_stones["p2"] + self.komi
         return scores
     
     def captured_territories_count(self):   # returns how many captured territories each player has
-        ct_count = {1:0, -1:0}
+        ct_count = {"p1":0, "p2":0}
         visited = set()     # saves territories that were counted before being visited by the following loops
         for i in range(self.n):
             for j in range(self.n):
@@ -86,13 +80,16 @@ class Game:
         return ct_count
 
     def get_number_of_stones(self):     # calculates the number of stones each player has on the board
-        n_stones = {1:0, -1:0}
+        n_stones = {"p1":0, "p2":0}
         for i in range(self.n):
             for j in range(self.n):
                 stone = self.board[i][j]
                 if stone == 0:          # if position is empty, the method skips to the next iteration
                     continue
-                n_stones[stone] += 1    # increments by one the number of stones for the player who holds this position
+                elif stone == 1:
+                    n_stones["p1"] += 1    # increments by one the number of stones for the player who holds this position
+                elif stone == -1:
+                    n_stones["p2"] += 1
         return n_stones
     
     def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule
@@ -125,11 +122,8 @@ class Game:
             self.end_game()
                  
     def end_game(self):     # -> code what happens when the game finishes using pygame
-        #####
-        self.winner = self.get_winner()
         self.end = 1
-    
-
+        self.winner = self.get_winner()
         
 def setScreen():
         width = 800
@@ -159,10 +153,10 @@ def drawPieces(game, screen):
         for i in range(n):
             for j in range(n):
                 #desenha peças do jogador 1
-                if game.board[j][i] == 1:  #random test values, replace soon
+                if game.board[j][i] == 1:
                     pygame.draw.circle(screen, (0,0,0), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
                 #desenha peças do jogador 2
-                elif game.board[j][i]==-1:   #random test values, replace soon
+                elif game.board[j][i]==-1:
                     pygame.draw.circle(screen, (196,196,196), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
 
 def drawResult(game, screen):
@@ -171,12 +165,16 @@ def drawResult(game, screen):
         font = pygame.font.Font('freesansbold.ttf', 32)
         pygame.draw.rect(screen, (0,0,0), (120, 240, 560, 320))
         pygame.draw.rect(screen, (255,255,255), (140, 260, 520, 280))
-        if game.end == 3:
+        result = game.get_winner()
+        if result == 0:
             text = font.render("Empate!", True, (0,0,0))
-        elif game.end == 1:
+        elif result == 1:
             text = font.render("Jogador 1 vence!", True, (0,0,255))
-        elif game.end == -1:
+        elif result == 22:
             text = font.render("Jogador 2 vence!", True, (0,150,0))
+        else:
+            text = font.render("ERROR", True, (100, 0, 0))
+            print(f"Unexpected result: {result}")
         text_rect = text.get_rect(center=(400, 400))
         screen.blit(text, text_rect)
 
@@ -203,21 +201,19 @@ def jogo_Humano_Humano(game, screen):
             event = pygame.event.poll()
             if event.type == pygame.QUIT:
                 game.end==game.get_winner()
-            #verificar se o jogador está cercado / não tem jogadas possiveis e tem de passar a jogada
-            if not game.is_full():
-                #escolher a peça para jogar e as possíveis plays
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    targetCell = mousePos(game)
-                    prevBoard = cp.deepcopy(game.board)
-                    #game = executeMov(game, targetCell, turn)
-                    game.move(targetCell[1],targetCell[0])
-                    if not (np.array_equal(prevBoard,game.board)):
-                        turn = switchPlayer(turn)
-                    drawBoard(game, screen)
-                    drawPieces(game, screen)
-            else:
-                game.end = objective_test(game,turn)
 
+            if event.type == pygame.KEYDOWN:    # tecla P = dar pass
+                if event.key == pygame.K_p:
+                    game.pass_turn()
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                targetCell = mousePos(game)
+                prevBoard = cp.deepcopy(game.board)
+                game.move(targetCell[1],targetCell[0])
+                if not (np.array_equal(prevBoard,game.board)):
+                    turn = switchPlayer(turn)
+                drawBoard(game, screen)
+                drawPieces(game, screen)
             #to display the winner
             while game.end != 0:
                 drawResult(game,screen)
@@ -231,20 +227,6 @@ def jogo_Humano_Humano(game, screen):
 
 def switchPlayer(turn):
         return turn*-1
-
-def objective_test(game,player): #atualizar count
-    if np.count_nonzero(game.board==(3-player))==0:
-        return player
-    if np.count_nonzero(game.board==0) != 0:
-                return -1
-    if np.count_nonzero(game.board==0) == 0:  
-        count_p=np.count_nonzero(game.board==player)
-        count_o=np.count_nonzero(game.board==(3-player))
-        if count_p > count_o:
-            return player
-        if count_o > count_p:
-            return (3-player)
-    return 0
     
             
 def ask_board_size():
@@ -262,10 +244,10 @@ def initialize_game():
     n = ask_board_size()
     initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
     initial_state = Game(initial_board)
-    # pygame.init()
-    # screen = setScreen()
-    # drawBoard(initial_state, screen)
-    # jogo_Humano_Humano(initial_state, screen)
+    pygame.init()
+    screen = setScreen()
+    drawBoard(initial_state, screen)
+    jogo_Humano_Humano(initial_state, screen)
     return initial_state    
 
 def human_vs_human_terminal():
@@ -287,7 +269,7 @@ def human_vs_human_terminal():
 
 
 def main():
-    human_vs_human_terminal()
+    initial_state = initialize_game()
         
 main()
 
