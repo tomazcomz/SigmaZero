@@ -28,7 +28,9 @@
 
 # Gonçalo:
 
+    - Segunda: 16-17
     - Terça: 16h30-17h45
+    - Quarta: 16-17
     - Quinta: 8-9
     - Sexta: 15-16
     - Domingo: 15-17 (se houver alteração, eu aviso)
