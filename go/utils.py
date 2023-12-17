@@ -1,6 +1,20 @@
 import numpy as np
 
 
+def check_for_captures_aux(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
+    player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
+    n = len(board)
+    for i in range(n):
+        for j in range(n):
+            if board[i][j] != player_checked:
+                continue    # only checks for captured pieces of the player who didn't make the last move
+            captured_group = flood_fill(i,j,board)
+            if captured_group is not None:
+                for (x,y) in captured_group:
+                    board[x][y] = 0    # updating the board after a capture
+    return board
+
+
 def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
         return i < 0 or i >= n or j < 0 or j >= n
 

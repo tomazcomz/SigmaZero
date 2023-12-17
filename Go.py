@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 import copy as cp
-from go.utils import flood_fill,get_captured_territories
+from go.utils import flood_fill,get_captured_territories,check_for_captures_aux
 from copy import deepcopy
 import time
 
@@ -41,12 +41,21 @@ class Game:
             
     def is_move_valid(self,i,j):
         return (i,j) in self.check_possible_moves()
+    
+    def is_suicide(self,i,j):   # checks if a move would result in a 'suicide'
+        new_board = deepcopy(self.board)
+        new_board[i][j] = self.turn    # playing the move in question in a new board
+        new_board = check_for_captures_aux(new_board, self.turn)    # removing the opponent's captured pieces after the new move
+        captured_group = flood_fill(i,j,new_board)  # checking if the position (i,j) would be captured after the new move
+        if captured_group is not None:
+            return True     # if the position would be captured after the new move, then this move results in a suicide
+        return False    # otherwise, this move doesn't result in a suicide, thus being playable
             
     def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
         possible_moves = deepcopy(self.empty_positions)
         prev_move = self.previous_moves[self.turn]
         if prev_move is not None and prev_move in possible_moves:
-            possible_moves.remove(prev_move)
+            possible_moves.remove(prev_move)    # removing this player's previous move from the possible moves set
         # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide
         moves_to_be_removed = set()
         for move in possible_moves:
@@ -54,10 +63,10 @@ class Game:
             if self.is_suicide(i,j):
                 moves_to_be_removed.add(move)
         for move in moves_to_be_removed:
-            possible_moves.remove(move)
+            possible_moves.remove(move)   # removing every move that would cause suicide
         return possible_moves
         
-    def check_for_captures(self):
+    def check_for_captures(self):   # checking captured pieces after a move
         player_checked = -self.turn
         for i in range(self.n):
             for j in range(self.n):
@@ -83,8 +92,10 @@ class Game:
     
     def is_game_finished(self):
         if self.pass_count == 2:    # game ends if both players consecutively pass
+            print("Reason for game ending: 2 passes in a row")
             return True
-        if self.play_idx >= self.n*2*2:    # game ends if n*n*2 plays have occurred
+        if self.play_idx >= (self.n**2)*2:    # game ends if n*n*2 plays have occurred
+            print("Reason for game ending: the limit of n*n*2 plays was exceeded")
             return True
         return False
         
@@ -322,5 +333,4 @@ main()
 # play ends when both players pass
 # implementing positional superko rule
 # limite de jogadas: n*n*2
-# definir funcao check_for_captures
-# definir funcao get_winner
+# making a move that results in 'suicide' is forbidden
