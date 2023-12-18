@@ -7,17 +7,20 @@ import time
 
 
 class Game:
-    def __init__(self,board):
+    def __init__(self,board, captured_pieces={1:0,-1:0},turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None):
         self.n = len(board)             # number of rows and columns
         self.board = board
-        self.captured_pieces = {1:0, -1:0}     # indicates the amount of pieces captured by each player
-        self.turn = 1            # who's playing next
-        self.play_idx = 0        # how many overall plays occurred before this state
-        self.pass_count = 0      # counts the current streak of 'pass' plays
+        self.captured_pieces = captured_pieces     # indicates the amount of pieces captured by each player
+        self.turn = turn                # who's playing next
+        self.play_idx = play_idx        # how many overall plays occurred before this state
+        self.pass_count = pass_count    # counts the current streak of 'pass' plays
+        self.previous_boards = previous_boards     # saves both boards originated by each player's last move
+        if empty_positions is None:
+            self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])
+        else:
+            self.empty_positions = empty_positions     # stores every empty position in the current board
         self.komi = 5.5          # predefined value to be added to white's score
         self.end = 0             # indicates if the game has ended ({0,1})
-        self.previous_boards = {1:None, -1:None}     # saves both boards originated by each player's last move
-        self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])    # stores every empty position
         
     def move(self,i,j):         # placing a piece on the board
         self.board[i][j] = self.turn    # puts a piece in the desired position
@@ -154,12 +157,34 @@ class Game:
         self.winner,self.scores = self.get_winner()
 
 
+    def create_children(self):  # creating all the possible new states originated from the current game state
+        children = []
+        for move in self.check_possible_moves():
+            i,j=move
+            new_state = deepcopy(self)
+            new_state.move(i,j)
+            children.append(new_state)
+        return children
+            
+            
+    # def _equals(self, other_state):    # function to check if this game state is equal to another
+    #     if not np.array_equal(self.board, other_state.board):
+    #         return False
+    #     if not np.array_equal(self.previous_boards[1], other_state.board):
+    #         return False
+    #     self.captured_pieces = captured_pieces     # indicates the amount of pieces captured by each player
+    #     self.turn = turn                # who's playing next
+    #     self.play_idx = play_idx        # how many overall plays occurred before this state
+    #     self.pass_count = pass_count    # counts the current streak of 'pass' plays
+    #     self.previous_boards = previous_boards     # saves both boards originated by each player's last move
+        
+
 def setScreen():
-        width = 800
-        height = 800
-        screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption("Go")
-        return screen
+    width = 800
+    height = 800
+    screen = pygame.display.set_mode((width, height))
+    pygame.display.set_caption("Go")
+    return screen
     
 def drawBoard(game, screen):
     screen.fill((220,191,137))    # background
