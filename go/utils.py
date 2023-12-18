@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 
 
 def check_for_captures_aux(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
@@ -13,6 +14,27 @@ def check_for_captures_aux(board, turn):   # method that checks for captures, gi
                 for (x,y) in captured_group:
                     board[x][y] = 0    # updating the board after a capture
     return board
+
+def check_for_captures_aux_example():
+    previous_board = np.array([[0,1,-1,0,0],
+                               [1,-1,0,-1,0],
+                               [0,1,-1,0,0],
+                               [0,0,1,-1,0],
+                               [0,0,0,0,0]])
+    
+    current_board = np.array([[0,1,-1,0,0],
+                              [1,0,1,-1,0],
+                              [0,1,-1,0,0],
+                              [0,0,1,-1,0],
+                              [0,0,0,0,0]])
+    
+    turn = -1
+    i,j = 1,1
+    new_board = deepcopy(current_board)
+    new_board[i][j] = turn
+    new_board = check_for_captures_aux(new_board,turn)
+    print(np.array_equal(new_board, previous_board))
+    # if the check_for_captures_aux method does what it's supposed to, True shall be printed
 
 
 def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
@@ -47,7 +69,6 @@ def _flood_fill(i,j,original_piece,board,group_positions,_visited):
     return False, group_positions
 
 def flood_fill_example():
-    # Example usage:
     board = np.array([
         [0, 1, 0, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0, 0],
@@ -124,3 +145,4 @@ def get_captured_territories_example():
 
 # flood_fill_example()
 # get_captured_territories_example()
+# check_for_captures_aux_example()

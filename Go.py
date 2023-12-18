@@ -16,25 +16,24 @@ class Game:
         self.pass_count = 0      # counts the current streak of 'pass' plays
         self.komi = 5.5          # predefined value to be added to white's score
         self.end = 0             # indicates if the game has ended ({0,1})
-        self.previous_moves = {1:None, -1:None}     # saves the previous move of each player
+        self.previous_boards = {1:None, -1:None}     # saves both boards originated by each player's last move
         self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])    # stores every empty position
         
     def move(self,i,j):         # placing a piece on the board
-        self.board[i][j] = self.turn
+        self.board[i][j] = self.turn    # puts a piece in the desired position
+        self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
         self.check_for_captures()
         self.play_idx += 1      # increments the play counter
         self.pass_count = 0     # resets the consecutive pass counter
-        self.previous_moves[self.turn] = (i,j)   # saves this move
         self.turn = -self.turn
         self.empty_positions.remove((i,j))
         if self.is_game_finished():
             self.end_game()
         
     def pass_turn(self):        # a player chooses to "pass"
-        self.check_for_captures()
+        self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
         self.play_idx += 1      # increments the play counter
         self.pass_count += 1    # increments the consecutive pass counter
-        self.previous_moves[self.turn] = None   # saves this player's move
         self.turn = -self.turn
         if self.is_game_finished():
             self.end_game()
@@ -51,19 +50,25 @@ class Game:
             return True     # if the position would be captured after the new move, then this move results in a suicide
         return False    # otherwise, this move doesn't result in a suicide, thus being playable
             
+    def violates_superko(self,i,j):   # checks if a move would result in a violation of the ko rule (which is a consequence of the positional superko rule)
+        new_board = deepcopy(self.board)
+        new_board[i][j] = self.turn    # playing the move in question in a new board
+        new_board = check_for_captures_aux(new_board, self.turn)   # removing the opponent's captured pieces after the new move
+        if np.array_equal(new_board, self.previous_boards[self.turn]):
+            return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
+        return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
+            
     def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
         possible_moves = deepcopy(self.empty_positions)
-        prev_move = self.previous_moves[self.turn]
-        if prev_move is not None and prev_move in possible_moves:
-            possible_moves.remove(prev_move)    # removing this player's previous move from the possible moves set
-        # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide
         moves_to_be_removed = set()
         for move in possible_moves:
             i,j=move
-            if self.is_suicide(i,j):
+            # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide,
+            # and removing moves that would violate the positional superko rule
+            if self.is_suicide(i,j) or self.violates_superko(i,j):
                 moves_to_be_removed.add(move)
         for move in moves_to_be_removed:
-            possible_moves.remove(move)   # removing every move that would cause suicide
+            possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
         return possible_moves
         
     def check_for_captures(self):   # checking captured pieces after a move
@@ -203,7 +208,7 @@ def drawResult(game, screen):
     
 def result_text(screen,result,scores):
     font = pygame.font.Font('freesansbold.ttf', 32)
-    color = {1:"white",2:"black"}
+    color = {1:"black",2:"white"}
     text_lines = [
         "Player " + str(result) + " (" + str(color[result]) + ") wins!",
         "",
@@ -245,7 +250,7 @@ def mousePos(game):
 def switchPlayer(turn):
     return -turn
     
-def human_v_human(game, screen):
+def human_v_human(game: Game, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
     while game.end==0:
         drawBoard(game, screen)
@@ -293,25 +298,9 @@ def ask_board_size():
         print("Invalid input. Write 1 or 2.")
         n = ask_board_size()
     return n
-
-def human_vs_human_terminal():
-    game_state = initialize_game()
-    while game_state.end != 1:
-        print(game_state.board)
-        print()
-        inp = input(f"Player {game_state.turn}'s turn\nChoose your move by entering 'pass' or the coordinates of your move (in the form i,j):\n")
-        if inp == "pass":
-            game_state.pass_turn()
-        else:
-            game_state.move(int(inp[0]),int(inp[-1]))
-        print()
-    winner = game_state.get_winner()
-    if winner == 0:
-        print("\nGAME OVER\nIt's a draw!")
-    else:
-        print(f"\nGAME OVER\nPlayer {winner} wins!")
         
-def initialize_game():
+        
+def main():
     n = ask_board_size()
     initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
     initial_state = Game(initial_board)
@@ -319,11 +308,6 @@ def initialize_game():
     screen = setScreen()
     drawBoard(initial_state, screen)
     human_v_human(initial_state, screen)
-    return initial_state    
-
-
-def main():
-    initial_state = initialize_game()
         
 main()
 
