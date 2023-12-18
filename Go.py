@@ -166,6 +166,10 @@ class Game:
             children.append(new_state)
         return children
             
+    def get_next_state(self,i,j):
+        next_state = deepcopy(self)
+        next_state.move(i,j)
+        return next_state
             
     # def _equals(self, other_state):    # function to check if this game state is equal to another
     #     if not np.array_equal(self.board, other_state.board):
