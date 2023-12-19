@@ -5,12 +5,12 @@ from copy import deepcopy
 import time
 from go.utils import flood_fill,get_captured_territories,check_for_captures
 
+KOMI = 5.5   # predefined value to be added to white's score
 
-class Game:
-    def __init__(self,board, captured_pieces={1:0,-1:0},turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None):
+class GameState:
+    def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None):
         self.n = len(board)             # number of rows and columns
         self.board = board
-        self.captured_pieces = captured_pieces     # indicates the amount of pieces captured by each player
         self.turn = turn                # who's playing next
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
@@ -19,19 +19,21 @@ class Game:
             self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])
         else:
             self.empty_positions = empty_positions     # stores every empty position in the current board
-        self.komi = 5.5          # predefined value to be added to white's score
+        if self.is_game_finished():
+            self.end_game()
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self,i,j):         # placing a piece on the board
-        self.board[i][j] = self.turn    # puts a piece in the desired position
-        self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
-        self.check_for_captures()
-        self.play_idx += 1      # increments the play counter
-        self.pass_count = 0     # resets the consecutive pass counter
-        self.turn = -self.turn
-        self.empty_positions.remove((i,j))
-        if self.is_game_finished():
-            self.end_game()
+        next_board = deepcopy(self.board)
+        next_board[i][j] = self.turn
+        next_board = check_for_captures(next_board, self.turn)
+        next_previous_boards = deepcopy(self.previous_boards)
+        next_previous_boards[self.turn] = deepcopy(next_board)
+        next_empty_positions = deepcopy(self.empty_positions)
+        next_empty_positions.remove((i,j))
+        next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions)
+        return next_state
+        
         
     def pass_turn(self):        # a player chooses to "pass"
         self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
@@ -56,7 +58,7 @@ class Game:
     def violates_superko(self,i,j):   # checks if a move would result in a violation of the ko rule (which is a consequence of the positional superko rule)
         new_board = deepcopy(self.board)
         new_board[i][j] = self.turn    # playing the move in question in a new board
-        new_board = check_for_captures_aux(new_board, self.turn)   # removing the opponent's captured pieces after the new move
+        new_board = check_for_captures(new_board, self.turn)   # removing the opponent's captured pieces after the new move
         if np.array_equal(new_board, self.previous_boards[self.turn]):
             return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
         return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
@@ -74,24 +76,7 @@ class Game:
             possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
         return possible_moves
         
-    def check_for_captures(self):   # checking captured pieces after a move
-        player_checked = -self.turn
-        for i in range(self.n):
-            for j in range(self.n):
-                if self.board[i][j] != player_checked:
-                    continue    # only checks for captured pieces of the player who didn't make the last move
-                captured_group = self.captured_group(i,j)
-                if captured_group is not None:
-                    for (x,y) in captured_group:
-                        if self.board[x][y]==1:
-                            captor = -1
-                        elif self.board[x][y]==-1:
-                            captor = 1
-                        else:
-                            raise ValueError("This should be a captured piece")
-                        self.captured_pieces[captor]+=1   # a player captures an opponent's piece
-                        self.board[x][y] = 0
-                        self.empty_positions.add((x,y))
+    
 
     # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
     def captured_group(self,i,j):
@@ -121,7 +106,7 @@ class Game:
         captured_territories = self.captured_territories_count()
         n_stones = self.get_number_of_stones()
         scores[1] += captured_territories[1] + n_stones[1]
-        scores[-1] += captured_territories[-1] + n_stones[-1] + self.komi
+        scores[-1] += captured_territories[-1] + n_stones[-1] + KOMI
         return scores
      
     def get_number_of_stones(self):     # calculates the number of stones each player has on the board

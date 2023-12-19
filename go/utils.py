@@ -2,7 +2,7 @@ import numpy as np
 from copy import deepcopy
 
 
-def check_for_captures_aux(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
+def check_for_captures(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
     n = len(board)
     for i in range(n):
