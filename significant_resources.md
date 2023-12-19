@@ -6,3 +6,5 @@ https://www.youtube.com/watch?v=62nq4Zsn8vc
 https://github.com/JoshVarty/AlphaZeroSimple    
 
 https://www.youtube.com/watch?v=wuSQpLinRB4    # freeCodeCamp AlphaZero
+
+https://jonathan-hui.medium.com/alphago-zero-a-game-changer-14ef6e45eba5
