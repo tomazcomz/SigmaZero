@@ -34,14 +34,11 @@ class GameState:
         next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions)
         return next_state
         
-        
     def pass_turn(self):        # a player chooses to "pass"
-        self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
-        self.play_idx += 1      # increments the play counter
-        self.pass_count += 1    # increments the consecutive pass counter
-        self.turn = -self.turn
-        if self.is_game_finished():
-            self.end_game()
+        next_previous_boards = deepcopy(self.previous_boards)
+        next_previous_boards[self.turn] = deepcopy(self.board)
+        next_state = GameState(self.board,-self.turn,self.play_idx+1,self.pass_count+1,next_previous_boards,self.empty_positions)
+        return next_state
             
     def is_move_valid(self,i,j):
         return (i,j) in self.check_possible_moves()
@@ -273,7 +270,7 @@ def mousePos(game):
 def switchPlayer(turn):
     return -turn
     
-def human_v_human(game: Game, screen):    # main method that runs a human vs human game and implements a GUI
+def human_v_human(game: GameState, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
     while game.end==0:
         drawBoard(game, screen)
@@ -284,7 +281,7 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
 
         if event.type == pygame.KEYDOWN:    # tecla P = dar pass
             if event.key == pygame.K_p:
-                game.pass_turn()
+                game = game.pass_turn()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             targetCell = mousePos(game)
@@ -292,7 +289,7 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             i,j = targetCell[1],targetCell[0]
             if not game.is_move_valid(i,j):    # checks if move is valid
                 continue    # if not, it expects another event from the same player
-            game.move(i,j)
+            game = game.move(i,j)
             if not (np.array_equal(prevBoard,game.board)):
                 turn = switchPlayer(turn)
             time.sleep(0.1)
@@ -326,7 +323,7 @@ def ask_board_size():
 def main():
     n = ask_board_size()
     initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
-    initial_state = Game(initial_board)
+    initial_state = GameState(initial_board)
     pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)

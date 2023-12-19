@@ -45,7 +45,7 @@ def start_server_go(host='localhost', port=12345):
             print(current_agent, " -> ",data)
             jog = jog+1
             
-            if jog==10: 
+            if jog==10:
                 agents[current_agent].sendall(b'END 0 10 10')
                 agents[1-current_agent].sendall(b'END 0 10 10')
                 break
