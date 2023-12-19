@@ -1,9 +1,9 @@
 import pygame
 import numpy as np
 import copy as cp
-from go.utils import flood_fill,get_captured_territories,check_for_captures_aux
 from copy import deepcopy
 import time
+from go.utils import flood_fill,get_captured_territories,check_for_captures_aux
 
 
 class Game:
@@ -107,7 +107,7 @@ class Game:
             return True
         return False
         
-    def get_winner(self):       # returns the player with the highest score or 0, if it's a draw
+    def get_winner(self):       # returns the player with the highest score and the scores
         scores = self.get_scores()
         if scores[1] == scores[-1]:
             return 0, scores    # draw
@@ -152,12 +152,12 @@ class Game:
                     ct_count[captor] += 1   # incrementing the captor's count by one for each captured territory
         return ct_count
     
-    def end_game(self):     # -> code what happens when the game finishes using pygame
+    def end_game(self):     # retrieving the winner and the scores and ending the game
         self.end = 1
         self.winner,self.scores = self.get_winner()
 
-
-    def create_children(self):  # creating all the possible new states originated from the current game state
+    # methods used to run the Monte Carlo Tree Search algorithm
+    def create_children(self):   # creating all the possible new states originated from the current game state
         children = []
         for move in self.check_possible_moves():
             i,j=move
@@ -166,10 +166,19 @@ class Game:
             children.append(new_state)
         return children
             
-    def get_next_state(self,i,j):
+    def get_next_state(self,i,j):   # given an action, this method returns the resulting game state
         next_state = deepcopy(self)
         next_state.move(i,j)
         return next_state
+            
+    def get_value_and_terminated(self,state,i,j):   ################### (not sure if this is correct)
+        new_state = deepcopy(state)
+        new_state.move(i,j)
+        if new_state.is_game_finished():
+            return 1, True
+        if np.sum(new_state.check_possible_moves())==0:
+            return 0, True
+        return 0, False
             
     # def _equals(self, other_state):    # function to check if this game state is equal to another
     #     if not np.array_equal(self.board, other_state.board):
