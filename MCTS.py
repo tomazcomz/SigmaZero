@@ -23,12 +23,14 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, game, args, state, parent=None, action=None, prior_prob=0):
+    def __init__(self, state, game=Go, untried_actions=None, parent=None, p_action=None, prior_prob=0):
         self.game=game
-        self.args=args
+        #self.args=args
         self.state=state
         self.parent=parent
-        self.action=action
+        self.p_action=p_action
+        self.untried_actions = self.game.check_possible_moves()
+
         self.prior_prob=prior_prob # P
 
         self.children=[]
@@ -65,8 +67,9 @@ class Node:
 
         return mean_action_value+self.args['cput']*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
 
-    def expand(self, p): # to do
+    def expand(self): # to do
         # look over each action, the probabilities given by policy
+        '''
         for action, prob in enumerate(p):
             if prob>0:
                 
@@ -76,8 +79,11 @@ class Node:
                 
                 child_state=self.game.create_children()
                 child = Node(self.game, self.args, child_state, self, action, prob)
-                self.children.append(child)   
+                self.children.append(child)'''
 
+        action = self.untried_actions.pop()
+        next_state = self.game.move(action[0], action[1])
+        child = Node(next_state, parent=self, p_action=action)
         return child
     
     def backprop(self, v):
@@ -88,6 +94,9 @@ class Node:
 
         if self.parent is not None:
             self.parent.backprop(v)
+
+    def is_terminal(self):
+        return self.state.is_game_finished()
 
 class MCTS:
     def __init__(self, game, args, model):
@@ -139,6 +148,16 @@ class MCTS:
     action_prob/=np.sum(action_prob) # <- for turning them into probabilities
     return action_prob
     # return visit count distrbution: distribution of visit count of the children for our root node """
+
+    def treepolicy(self):
+        cur = self
+        while not cur.is_terminal():
+            if not cur.fully_expanded():
+                return cur.expand()
+            else:
+                cur = cur.select()
+        
+        return cur
 
 
 # test part ----------------------------------------------------------------
