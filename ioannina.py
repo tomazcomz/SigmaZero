@@ -42,21 +42,21 @@ class Neura:
         rnl=layers.Activation(activation='softplus')(b)
         return rnl
 
-    def resblock(self,input):
+    def resblock(self,input,i):
         cb=self.convblock(input)
         c=layers.Conv2D(256,3,(1,1),'same')(cb)
         b=layers.BatchNormalization()(c)
         s=layers.Add()([b,input])
-        rnl=layers.Activation(activation='softplus')(s)
+        rnl=layers.Activation(activation='softplus',name=f'endrestower{i}')(s)
         return rnl
 
     def polhead(self,input):
-        c=layers.Conv2D(2,1,(1,1),'same')(input)
-        b=layers.BatchNormalization()(c)
-        rnl=layers.Activation(activation='softplus')(b)
-        flt=layers.Flatten()(rnl)
-        #fc=layers.Dense()(flt)       #output of 362 flatten?
-        return flt
+        c=layers.Conv2D(2,1,(1,1),'same',name='convpol')(input)
+        b=layers.BatchNormalization(name='bnpol')(c)
+        rnl=layers.Activation(activation='softplus',name='rnlpol')(b)
+        flt=layers.Flatten(name='polflat')(rnl)
+        fc=layers.Dense(units=37)(flt)       #output of 362 flatten?
+        return fc
 
     def valhead(self,input):
         c=layers.Conv2D(1,1,(1,1),'same')(input)
@@ -67,7 +67,7 @@ class Neura:
         fcl=layers.Dense(256)(flt)
         rnl2=layers.Activation(activation='softplus')(fcl)
         fcs=layers.Flatten()(rnl2)        # flatten?!
-        tanh=layers.Activation(activation='tanh')(fcs)
+        tanh=layers.Activation(activation='tanh',name='valout')(fcs)
         return tanh
     
     def loss(val,zed,pist,pol,state):
@@ -78,7 +78,7 @@ class Neura:
         conv=self.convblock(self.inpt)
         restower=conv
         for i in range(n_res):
-            restower=self.resblock(restower)
+            restower=self.resblock(restower,i)
         polh=self.polhead(restower)
         valh=self.valhead(restower)
         outputs=[polh,valh]
