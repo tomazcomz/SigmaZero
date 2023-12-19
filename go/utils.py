@@ -1,4 +1,40 @@
 import numpy as np
+from copy import deepcopy
+
+
+def check_for_captures_aux(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
+    player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
+    n = len(board)
+    for i in range(n):
+        for j in range(n):
+            if board[i][j] != player_checked:
+                continue    # only checks for captured pieces of the player who didn't make the last move
+            captured_group = flood_fill(i,j,board)
+            if captured_group is not None:
+                for (x,y) in captured_group:
+                    board[x][y] = 0    # updating the board after a capture
+    return board
+
+def check_for_captures_aux_example():
+    previous_board = np.array([[0,1,-1,0,0],
+                               [1,-1,0,-1,0],
+                               [0,1,-1,0,0],
+                               [0,0,1,-1,0],
+                               [0,0,0,0,0]])
+    
+    current_board = np.array([[0,1,-1,0,0],
+                              [1,0,1,-1,0],
+                              [0,1,-1,0,0],
+                              [0,0,1,-1,0],
+                              [0,0,0,0,0]])
+    
+    turn = -1
+    i,j = 1,1
+    new_board = deepcopy(current_board)
+    new_board[i][j] = turn
+    new_board = check_for_captures_aux(new_board,turn)
+    print(np.array_equal(new_board, previous_board))
+    # if the check_for_captures_aux method does what it's supposed to, True shall be printed
 
 
 def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
@@ -33,7 +69,6 @@ def _flood_fill(i,j,original_piece,board,group_positions,_visited):
     return False, group_positions
 
 def flood_fill_example():
-    # Example usage:
     board = np.array([
         [0, 1, 0, 0, 0, 0, 0],
         [0, 1, 0, 0, 0, 0, 0],
@@ -58,7 +93,6 @@ def get_captured_territories(i,j,board):
     ct_group, captor = _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set())
     return ct_group, captor
 
-
 # Let A be a point connected to (through a path of adjacent positions) a black stone. 
 # Therefore, A does not belong to White's territory. 
 # Furthermore A is connected to B, which is adjacent to a white stone. 
@@ -76,10 +110,16 @@ def _get_captured_territories(i,j,board,ct_group,captor,visited):
     if board[i][j] != 0:    # if this position isn't empty, it checks whose player it belongs to
         if captor == 0:
             captor = board[i][j]     # getting the captor of this group, if there isn't one yet
-            return ct_group, captor
+            if captor == 1:
+                return ct_group, captor
+            elif captor == -1:
+                return ct_group, captor
         elif board[i][j]!=captor:   # If there's two different captors to the group's positions, then
             return None,0           # it returns None, because the group has links to both players' pieces, hence there's no group captured by one captor
-        return ct_group, captor     # this piece is captured by the same captor as every piece in this group checked so far
+        if captor == 1:
+            return ct_group, captor     # this piece is captured by the same captor as every piece in this group checked so far
+        elif captor == -1:
+            return ct_group, captor
     ct_group.add((i,j))  # if this position is empty, then it is added to the territory group
     neighbors = [(i-1, j), (i+1, j), (i, j-1), (i, j+1)]   # if (i,j) has the same piece as the original position, its neighbors will be checked
     for x,y in neighbors:
@@ -105,3 +145,4 @@ def get_captured_territories_example():
 
 # flood_fill_example()
 # get_captured_territories_example()
+# check_for_captures_aux_example()
