@@ -1,6 +1,8 @@
 import numpy as np
 from copy import deepcopy
 
+def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
+    return i < 0 or i >= n or j < 0 or j >= n
 
 def check_for_captures(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
@@ -14,12 +16,6 @@ def check_for_captures(board, turn):   # method that checks for captures, given 
                 for (x,y) in captured_group:
                     board[x][y] = 0    # updating the board after a capture
     return board
-
-
-
-
-def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
-        return i < 0 or i >= n or j < 0 or j >= n
 
 def flood_fill(i,j,board):     # returns the captured group or None if there isn't one
     has_liberties, group_positions = _flood_fill(i,j,board[i][j],board,group_positions=set(),_visited=set())

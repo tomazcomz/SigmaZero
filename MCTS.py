@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import Go
+import OldGo
 import Attaxx 
 from ioannina import Neura
 
@@ -23,7 +23,7 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, state, game=Go, untried_actions=None, parent=None, p_action=None, prior_prob=0):
+    def __init__(self, state, game=OldGo, untried_actions=None, parent=None, p_action=None, prior_prob=0):
         self.game=game
         #self.args=args
         self.state=state

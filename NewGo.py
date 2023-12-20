@@ -3,9 +3,10 @@ import numpy as np
 import copy as cp
 from copy import deepcopy
 import time
-from go.utils import flood_fill,get_captured_territories,check_for_captures
+from go.utils import flood_fill,get_captured_territories
 
 KOMI = 5.5   # predefined value to be added to white's score
+
 
 class GameState:
     def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None):
@@ -18,18 +19,17 @@ class GameState:
         if empty_positions is None:
             self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])
         else:
-            self.empty_positions = empty_positions     # stores every empty position in the current board
-        if self.is_game_finished():
+            self.empty_positions = empty_positions   # set that stores every empty position in the current board; it is used to facilitate the determination of possible moves in each game state
+        if is_game_finished(self):
             self.end_game()
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self,i,j):         # placing a piece on the board
         next_board = deepcopy(self.board)
         next_board[i][j] = self.turn
-        next_board = check_for_captures(next_board, self.turn)
+        next_board, next_empty_positions = check_for_captures(next_board, self.turn, self.empty_positions)
         next_previous_boards = deepcopy(self.previous_boards)
         next_previous_boards[self.turn] = deepcopy(next_board)
-        next_empty_positions = deepcopy(self.empty_positions)
         next_empty_positions.remove((i,j))
         next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions)
         return next_state
@@ -40,55 +40,6 @@ class GameState:
         next_state = GameState(self.board,-self.turn,self.play_idx+1,self.pass_count+1,next_previous_boards,self.empty_positions)
         return next_state
             
-    def is_move_valid(self,i,j):
-        return (i,j) in self.check_possible_moves()
-    
-    def is_suicide(self,i,j):   # checks if a move would result in a 'suicide'
-        new_board = deepcopy(self.board)
-        new_board[i][j] = self.turn    # playing the move in question in a new board
-        new_board = check_for_captures(new_board, self.turn)    # removing the opponent's captured pieces after the new move
-        captured_group = flood_fill(i,j,new_board)  # checking if the position (i,j) would be captured after the new move
-        if captured_group is not None:
-            return True     # if the position would be captured after the new move, then this move results in a suicide
-        return False    # otherwise, this move doesn't result in a suicide, thus being playable
-            
-    def violates_superko(self,i,j):   # checks if a move would result in a violation of the ko rule (which is a consequence of the positional superko rule)
-        new_board = deepcopy(self.board)
-        new_board[i][j] = self.turn    # playing the move in question in a new board
-        new_board = check_for_captures(new_board, self.turn)   # removing the opponent's captured pieces after the new move
-        if np.array_equal(new_board, self.previous_boards[self.turn]):
-            return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
-        return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
-            
-    def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
-        possible_moves = deepcopy(self.empty_positions)
-        moves_to_be_removed = set()
-        for move in possible_moves:
-            i,j=move
-            # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide,
-            # and removing moves that would violate the positional superko rule
-            if self.is_suicide(i,j) or self.violates_superko(i,j):
-                moves_to_be_removed.add(move)
-        for move in moves_to_be_removed:
-            possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
-        return possible_moves
-        
-    
-
-    # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
-    def captured_group(self,i,j):
-        return flood_fill(i,j,self.board)
-    
-    
-    def is_game_finished(self):
-        if self.pass_count == 2:    # game ends if both players consecutively pass
-            print("Reason for game ending: 2 passes in a row")
-            return True
-        if self.play_idx >= (self.n**2)*2:    # game ends if n*n*2 plays have occurred
-            print("Reason for game ending: the limit of n*n*2 plays was exceeded")
-            return True
-        return False
-        
     def get_winner(self):       # returns the player with the highest score and the scores
         scores = self.get_scores()
         if scores[1] == scores[-1]:
@@ -141,7 +92,7 @@ class GameState:
     # methods used to run the Monte Carlo Tree Search algorithm
     def create_children(self):   # creating all the possible new states originated from the current game state
         children = []
-        for move in self.check_possible_moves():
+        for move in check_possible_moves(self):
             i,j=move
             new_state = deepcopy(self)
             new_state.move(i,j)
@@ -154,26 +105,76 @@ class GameState:
         return next_state
             
     def get_value_and_terminated(self,state,i,j):   ################### (not sure if this is correct)
-        new_state = deepcopy(state)
-        new_state.move(i,j)
-        if new_state.is_game_finished():
+        new_state = self.move(i,j)
+        if is_game_finished(new_state):
             return 1, True
-        if np.sum(new_state.check_possible_moves())==0:
+        if np.sum(check_possible_moves(new_state))==0:
             return 0, True
         return 0, False
             
-    # def _equals(self, other_state):    # function to check if this game state is equal to another
-    #     if not np.array_equal(self.board, other_state.board):
-    #         return False
-    #     if not np.array_equal(self.previous_boards[1], other_state.board):
-    #         return False
-    #     self.captured_pieces = captured_pieces     # indicates the amount of pieces captured by each player
-    #     self.turn = turn                # who's playing next
-    #     self.play_idx = play_idx        # how many overall plays occurred before this state
-    #     self.pass_count = pass_count    # counts the current streak of 'pass' plays
-    #     self.previous_boards = previous_boards     # saves both boards originated by each player's last move
-        
+# auxiliar methods to implement Go's game logic
+def check_for_captures(board, turn, empty_positions:set = set()):   # method that checks for captures, given a board and a turn, and returns the new board
+    player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
+    empty_positions = deepcopy(empty_positions)
+    n = len(board)
+    for i in range(n):
+        for j in range(n):
+            if board[i][j] != player_checked:
+                continue    # only checks for captured pieces of the player who didn't make the last move
+            captured_group = flood_fill(i,j,board)
+            if captured_group is not None:
+                for (x,y) in captured_group:
+                    board[x][y] = 0    # updating the board after a capture
+                    empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
+    return board, empty_positions   # returning the new board and the new empty positions list
 
+def is_move_valid(state:GameState,i,j):
+    if is_suicide(state.board,state.turn,i,j) or violates_superko(state.board,state.turn,state.previous_boards[state.turn],i,j):
+        return False
+    return True
+    # return (i,j) in check_possible_moves(state)
+    
+def check_possible_moves(state: GameState):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
+    possible_moves = deepcopy(state.empty_positions)
+    moves_to_be_removed = set()
+    for move in possible_moves:
+        i,j=move
+        # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide,
+        # and removing moves that would violate the positional superko rule
+        if is_suicide(state.board,state.turn,i,j) or violates_superko(state.board,state.turn,state.previous_boards[state.turn],i,j):
+            moves_to_be_removed.add(move)
+    for move in moves_to_be_removed:
+        possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
+    return possible_moves
+
+def is_suicide(board,turn,i,j):   # checks if a move would result in a 'suicide'
+    new_board = deepcopy(board)
+    new_board[i][j] = turn    # playing the move in question in a new board
+    new_board, _ = check_for_captures(new_board, turn)    # removing the opponent's captured pieces after the new move
+    captured_group = flood_fill(i,j,new_board)  # checking if the position (i,j) would be captured after the new move
+    if captured_group is not None:
+        return True     # if the position would be captured after the new move, then this move results in a suicide
+    return False    # otherwise, this move doesn't result in a suicide, thus being playable
+            
+def violates_superko(board,turn,previous_board,i,j):   # checks if a move would result in a violation of the ko rule (which is a consequence of the positional superko rule)
+    new_board = deepcopy(board)
+    new_board[i][j] = turn    # playing the move in question in a new board
+    new_board, _ = check_for_captures(new_board, turn)   # removing the opponent's captured pieces after the new move
+    if np.array_equal(new_board, previous_board):
+        return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
+    return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
+
+def is_game_finished(state: GameState):
+    if state.pass_count == 2:    # game ends if both players consecutively pass
+        print("Reason for game ending: 2 passes in a row")
+        return True
+    if state.play_idx >= (state.n**2)*2:    # game ends if n*n*2 plays have occurred
+        print("Reason for game ending: the limit of n*n*2 plays was exceeded")
+        return True
+    return False
+
+
+# implementing the graphical user interface with pygame 
 def setScreen():
     width = 800
     height = 800
@@ -181,7 +182,7 @@ def setScreen():
     pygame.display.set_caption("Go")
     return screen
     
-def drawBoard(game, screen):
+def drawBoard(game: GameState, screen):
     screen.fill((220,191,137))    # background
 
     #desenha frame do tabuleiro
@@ -197,7 +198,7 @@ def drawBoard(game, screen):
         #linhas horizontais
         pygame.draw.line(screen, (156,113,40), ((800/game.n)/2,800*i/game.n + (800/game.n)/2), (800-(800/game.n)/2,800*i/game.n + (800/game.n)/2), 2)
 
-def drawPieces(game, screen):
+def drawPieces(game: GameState, screen):
     n = game.n
     for i in range(n):
         for j in range(n):
@@ -208,7 +209,7 @@ def drawPieces(game, screen):
             elif game.board[j][i]==-1:
                 pygame.draw.circle(screen, (255,255,255), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
 
-def drawResult(game, screen):
+def drawResult(game: GameState, screen):
     if game.end == 0:
         return None
     pygame.draw.rect(screen, (0,0,0), (120, 240, 560, 320))
@@ -252,7 +253,7 @@ def result_text(screen,result,scores):
         y_offset += surface.get_height()
         
         
-def mousePos(game):
+def mousePos(game:GameState):
     click = pygame.mouse.get_pos()   
     i = int(click[0]*game.n/800)
     j = int(click[1]*game.n/800)
@@ -287,7 +288,7 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             targetCell = mousePos(game)
             prevBoard = cp.deepcopy(game.board)
             i,j = targetCell[1],targetCell[0]
-            if not game.is_move_valid(i,j):    # checks if move is valid
+            if not is_move_valid(game,i,j):    # checks if move is valid
                 continue    # if not, it expects another event from the same player
             game = game.move(i,j)
             if not (np.array_equal(prevBoard,game.board)):
