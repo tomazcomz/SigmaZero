@@ -290,6 +290,7 @@ def switchPlayer(turn):
     
 def human_v_human(game: Game, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
+    step=0
     while game.end==0:
         drawBoard(game, screen)
         drawPieces(game, screen)
@@ -308,11 +309,12 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             if not game.is_move_valid(i,j):    # checks if move is valid
                 continue    # if not, it expects another event from the same player
             game.move(i,j)
-            if not (np.array_equal(prevBoard,game.board)):
-                turn = switchPlayer(turn)
+            if not (np.array_equal(prevBoard,game.board)):          # !!! tem que ser implementado dentro do Game  !!!
+                turn = switchPlayer(turn)                           # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
+            np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
         # to display the winner
         if game.end != 0:
             drawResult(game,screen)
@@ -324,6 +326,7 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             pygame.display.update()
             time.sleep(4)
         pygame.display.update()
+        step+=1
 
             
 def ask_board_size():
