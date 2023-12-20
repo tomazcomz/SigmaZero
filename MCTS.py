@@ -1,8 +1,9 @@
 import math
 import numpy as np
-import Go
+import OldGo
 import Attaxx 
 from ioannina import Neura
+import Go
 
 """ 
 select, expand and evaluate, backup, play
@@ -23,16 +24,15 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, game, args, state, parent=None, action=None, prior_prob=0):
-        self.game=game
+    def __init__(self, state, game_state, args, untried_actions=None, parent=None, p_action=None, prior_prob=0):
+        self.game_state=game_state
         self.args=args
         self.state=state
         self.parent=parent
-        self.action=action
+        self.p_action=p_action
+        self.untried_actions = Go.check_possible_moves(self.game_state)
         self.prior_prob=prior_prob # P
-
         self.children=[]
-
         self.visit_count=0 # N
         self.total_action_value=0 # W
 
@@ -65,41 +65,29 @@ class Node:
 
         return mean_action_value+self.args['cput']*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
 
-    def expand(self, p): # to do
-        # look over each action, the probabilities given by policy
-        for action, prob in enumerate(p):
-            if prob>0:
-                
-                #child_state = self.state.copy()
-                #child_state = self.game.get_next_state(child_state, action, 1)
-                #child_state = self.game.change_perspective(child_state, player=-1) <- muda a persp do player
-                
-                child_state=self.game.create_children()
-                child = Node(self.game, self.args, child_state, self, action, prob)
-                self.children.append(child)   
-
+    def expand(self): # to do
+        action = self.untried_actions.pop()
+        next_state = self.game_state.move(action[0], action[1])
+        child = Node(next_state, parent=self, p_action=action)
         return child
     
     def backprop(self, v):
         self.total_action_value  += v
         self.visit_count += 1
 
-        #value = self.game.get_opponent_value(value)
-
         if self.parent is not None:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, game, args, model):
-        self.game=game
+    def __init__(self, game_state, args, model):
+        self.game_state=game_state
         self.args=args
         self.model=model
     
     def play(self,state):
-        root=Node(self.game,self.args,state)
+        root=Node(self.game_state,self.args,state)
 
         for search in range(self.args['num_searches']):
-            
             node=root
 
             # selection
@@ -107,91 +95,30 @@ class MCTS:
                 node=node.select()
 
             # check if node is terminal or not
-            terminal=self.game.is_game_finished()
-
-            # value, is_terminal = self.game.get_value_and_terminated(node.state, node.action_taken)
-            # value = self.game.get_opponent_value(value) <- do adversario
-            """
-            action taken from the parent, not the node itself, the action that was taken from the oponent on the nodes persperctive
-            so if its terminal node, the player who won was the opponent, not the player of the node
-            """
+            terminal=Go.is_game_finished(self.game_state)
 
             # expand and evaluate
             if not terminal:
                 p, v = self.model.predict() # to do
-                node=node.expand(p) # expanding in all directions
+                node=node.expand(p)
 
             # backpropagate
             node.backprop(v)
 
-            # talvez isto?
-            if self.args['num_searches']<=30:
-                temp=1
-            else:
-                temp=0
-            choosen=node.visit_count**(1/temp)/self.visit_count**(1/temp)
+        if self.game_state.play_idx-1<=5:
+            temp=1
+        else:
+            temp=0
 
-        return choosen
-
-    """ action_prob=np.zeros(self.game.action_size())
-    for child in root.children:
-        action_prob[child.action_taken] = child.visit_count
-    action_prob/=np.sum(action_prob) # <- for turning them into probabilities
-    return action_prob
-    # return visit count distrbution: distribution of visit count of the children for our root node """
+        action_prob=np.zeros(self.game_state.n**2+1)
+        for child in root.children:
+            action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
+        return action_prob
 
 
 # test part ----------------------------------------------------------------
 args = {
-    'C': 2,
+    'C': 10**-4,
     'num_searches': 1600
 }
 
-"""
-tictactoe = TicTacToe()
-player = 1
-
-args = {
-    'C': 2,
-    'num_searches': 1000
-}
-
-model = ResNet(tictactoe, 4, 64)
-model.eval()
-
-mcts = MCTS(tictactoe, args, model)
-
-state = tictactoe.get_initial_state()
-
-
-while True:
-    print(state)
-    
-    if player == 1:
-        valid_moves = tictactoe.get_valid_moves(state)
-        print("valid_moves", [i for i in range(tictactoe.action_size) if valid_moves[i] == 1])
-        action = int(input(f"{player}:"))
-
-        if valid_moves[action] == 0:
-            print("action not valid")
-            continue
-            
-    else:
-        neutral_state = tictactoe.change_perspective(state, player)
-        mcts_probs = mcts.search(neutral_state)
-        action = np.argmax(mcts_probs)
-        
-    state = tictactoe.get_next_state(state, action, player)
-    
-    value, is_terminal = tictactoe.get_value_and_terminated(state, action)
-    
-    if is_terminal:
-        print(state)
-        if value == 1:
-            print(player, "won")
-        else:
-            print("draw")
-        break
-        
-    player = tictactoe.get_opponent(player) 
-"""

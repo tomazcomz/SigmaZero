@@ -34,3 +34,9 @@
     - Quinta: 8-9
     - Sexta: 15-16
     - Domingo: 15-17 (se houver alteração, eu aviso)
+
+
+
+# É Preciso Fazer:
+
+    - Action com base na Policy retornada do MCTS
