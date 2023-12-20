@@ -3,6 +3,7 @@ from tensorflow import keras
 from keras import layers
 import numpy as np
 from keras.models import Model
+import os
 
 """ 
 
@@ -88,3 +89,20 @@ class Neura:
     def summary(self):
         self.net.summary()
         return
+
+def exports():   
+    # Set CUDA and CUPTI paths  
+    os.environ['CUDA_HOME'] = '/usr/local/cuda'
+    os.environ['PATH']= '/usr/local/cuda/bin:$PATH'  
+    os.environ['CPATH'] = '/usr/local/cuda/include:$CPATH'  
+    os.environ['LIBRARY_PATH'] = '/usr/local/cuda/lib64:$LIBRARY_PATH'  
+    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH'  
+    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
+
+def opts():
+    os.environ['CUDA_CACHE_DISABLE'] = '0'                  # disable caching
+    os.environ['TF_FORCE_GPU_ALLOW_GROWTH'] = 'true'        # starts on memory subset then grows
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'                # info and wawrning supressed
+    os.environ['TF_GPU_THREAD_MODE'] = 'gpu_private'        # gpu kernels running in parallel threads
+    #os.environ['TF_USE_CUDNN_BATCHNORM_SPATIAL_PERSISTENT'] = '1'      check spatial persistent bnormalization
+    os.environ['TF_ENABLE_WINOGRAD_NONFUSED'] = '1'         # check for more info
