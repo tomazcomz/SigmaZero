@@ -19,10 +19,12 @@ class Neura:
         if (game.type==0):
             self.state_dim=2
             self.nf=256                 # tem que ser menos
+            self.action_space=
             self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
         else:
             self.state_dim=3
             self.nf=256 
+            self.action_space=
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
 
 
@@ -46,7 +48,7 @@ class Neura:
         b=layers.BatchNormalization(name='bnpol')(c)
         rnl=layers.Activation(activation='softplus',name='rnlpol')(b)
         flt=layers.Flatten(name='polflat')(rnl)
-        fc=layers.Dense(units=37,name='')(flt)       #output of 362 flatten?
+        fc=layers.Dense(units=self.action_space,name='')(flt)       #output of 362 flatten?
         return fc
 
     def valhead(self,input,nf):

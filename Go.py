@@ -56,7 +56,7 @@ class Game:
     def violates_superko(self,i,j):   # checks if a move would result in a violation of the ko rule (which is a consequence of the positional superko rule)
         new_board = deepcopy(self.board)
         new_board[i][j] = self.turn    # playing the move in question in a new board
-        new_board = check_for_captures_aux(new_board, self.turn)   # removing the opponent's captured pieces after the new move
+        new_board = check_for_captures(new_board, self.turn)   # removing the opponent's captured pieces after the new move
         if np.array_equal(new_board, self.previous_boards[self.turn]):
             return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
         return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
@@ -290,6 +290,7 @@ def switchPlayer(turn):
     
 def human_v_human(game: Game, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
+    step=0
     while game.end==0:
         drawBoard(game, screen)
         drawPieces(game, screen)
@@ -308,11 +309,12 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             if not game.is_move_valid(i,j):    # checks if move is valid
                 continue    # if not, it expects another event from the same player
             game.move(i,j)
-            if not (np.array_equal(prevBoard,game.board)):
-                turn = switchPlayer(turn)
+            if not (np.array_equal(prevBoard,game.board)):          # !!! tem que ser implementado dentro do Game  !!!
+                turn = switchPlayer(turn)                           # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
+            np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
         # to display the winner
         if game.end != 0:
             drawResult(game,screen)
@@ -324,6 +326,7 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             pygame.display.update()
             time.sleep(4)
         pygame.display.update()
+        step+=1
 
             
 def ask_board_size():

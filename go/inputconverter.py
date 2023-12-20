@@ -1,5 +1,9 @@
 import numpy as np
 
+'''
+Para t<7 todos para trás, são em branco
+'''
+
 def gen_batch(gamestate):
     prev=get_previous(gamestate,8,[])
     frame=convert(gamestate,prev)
