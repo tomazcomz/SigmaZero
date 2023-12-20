@@ -36,6 +36,12 @@ quando se da input de um estado à rede neuronal, dar tambem input as suas rotac
     - APV-MCTS (ver resto destacado no pdf do paper original)
     - "The original paper mentions that Dirichlet noise is added to prior probabilities for additional exploration in the self-play stage"
 
+
+    T para diferentes tabuleiros:
+
+        - 7x7:  5
+        - 9x9:  7
+
 # Rede:
 
     - Batch Size para Attaxx
