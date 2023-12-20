@@ -2,7 +2,7 @@ import numpy as np
 from copy import deepcopy
 
 
-def check_for_captures_aux(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
+def check_for_captures(board, turn):   # method that checks for captures, given a board and a turn, and returns the new board
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
     n = len(board)
     for i in range(n):
@@ -15,26 +15,7 @@ def check_for_captures_aux(board, turn):   # method that checks for captures, gi
                     board[x][y] = 0    # updating the board after a capture
     return board
 
-def check_for_captures_aux_example():
-    previous_board = np.array([[0,1,-1,0,0],
-                               [1,-1,0,-1,0],
-                               [0,1,-1,0,0],
-                               [0,0,1,-1,0],
-                               [0,0,0,0,0]])
-    
-    current_board = np.array([[0,1,-1,0,0],
-                              [1,0,1,-1,0],
-                              [0,1,-1,0,0],
-                              [0,0,1,-1,0],
-                              [0,0,0,0,0]])
-    
-    turn = -1
-    i,j = 1,1
-    new_board = deepcopy(current_board)
-    new_board[i][j] = turn
-    new_board = check_for_captures_aux(new_board,turn)
-    print(np.array_equal(new_board, previous_board))
-    # if the check_for_captures_aux method does what it's supposed to, True shall be printed
+
 
 
 def invalid_position(i,j,n):    # helper method that returns True if (i,j) is an invalid position
@@ -67,25 +48,6 @@ def _flood_fill(i,j,original_piece,board,group_positions,_visited):
             return True, group_positions
     group_positions.add((i,j))      # this position has a same color piece as the original position being checked and it has no liberties
     return False, group_positions
-
-def flood_fill_example():
-    board = np.array([
-        [0, 1, 0, 0, 0, 0, 0],
-        [0, 1, 0, 0, 0, 0, 0],
-        [0, 0, 0, -1, 0, 0, 0],
-        [0, 0, -1, 1, -1, 0, 0],
-        [0, 0, 0, -1, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0]
-    ])
-    
-    row = 3
-    col = 3
-
-    captured_group = flood_fill(row, col, board)
-    print(captured_group)
-    if captured_group:
-        print(len(captured_group))
 
 
 # returns the positions of the captured group (i,j) belongs to and which player is the captor. if (i,j) isn't captured, return None
@@ -129,20 +91,6 @@ def _get_captured_territories(i,j,board,ct_group,captor,visited):
     return ct_group, captor     # if there is a captured group, it is returned alongside its captor
     
     
-def get_captured_territories_example():
-    board = np.array([
-        [0,1,-1,1],
-        [1,0,-1,0],
-        [1,-1,0,-1],
-        [0,1,-1,0]
-    ])
-    i=2
-    j=2
-    ct_group, captor = get_captured_territories(i,j,board)
-    print(ct_group)
-    print(f"captor: {captor}")
-
-
 # flood_fill_example()
 # get_captured_territories_example()
 # check_for_captures_aux_example()
