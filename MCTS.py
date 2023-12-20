@@ -3,6 +3,7 @@ import numpy as np
 import OldGo
 import Attaxx 
 from ioannina import Neura
+import Go
 
 """ 
 select, expand and evaluate, backup, play
@@ -23,13 +24,13 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, state, game, args, untried_actions=None, parent=None, p_action=None, prior_prob=0):
-        self.game=game
+    def __init__(self, state, game_state, args, untried_actions=None, parent=None, p_action=None, prior_prob=0):
+        self.game_state=game_state
         self.args=args
         self.state=state
         self.parent=parent
         self.p_action=p_action
-        self.untried_actions = self.game.check_possible_moves()
+        self.untried_actions = Go.check_possible_moves(self.game_state)
         self.prior_prob=prior_prob # P
         self.children=[]
         self.visit_count=0 # N
@@ -66,7 +67,7 @@ class Node:
 
     def expand(self): # to do
         action = self.untried_actions.pop()
-        next_state = self.game.move(action[0], action[1])
+        next_state = self.game_state.move(action[0], action[1])
         child = Node(next_state, parent=self, p_action=action)
         return child
     
@@ -78,13 +79,13 @@ class Node:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, game, args, model):
-        self.game=game
+    def __init__(self, game_state, args, model):
+        self.game_state=game_state
         self.args=args
         self.model=model
     
     def play(self,state):
-        root=Node(self.game,self.args,state)
+        root=Node(self.game_state,self.args,state)
 
         for search in range(self.args['num_searches']):
             node=root
@@ -94,7 +95,7 @@ class MCTS:
                 node=node.select()
 
             # check if node is terminal or not
-            terminal=self.game.is_game_finished()
+            terminal=Go.is_game_finished(self.game_state)
 
             # expand and evaluate
             if not terminal:
@@ -104,12 +105,12 @@ class MCTS:
             # backpropagate
             node.backprop(v)
 
-        if self.game.play_idx-1<=5:
+        if self.game_state.play_idx-1<=5:
             temp=1
         else:
             temp=0
 
-        action_prob=np.zeros(self.game.n**2+1)
+        action_prob=np.zeros(self.game_state.n**2+1)
         for child in root.children:
             action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
         return action_prob
