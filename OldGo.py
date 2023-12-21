@@ -4,16 +4,14 @@ import copy as cp
 from copy import deepcopy
 import time
 from go.utils import flood_fill,get_captured_territories,check_for_captures
-from go.inputconverter import gen_batch
 
-KOMI = 5.5   # predefined value to be added to white's score
 
-class GameState:
-    def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None,parent=None):
+class Game:
+    def __init__(self,board, captured_pieces={1:0,-1:0},turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None):
         self.n = len(board)             # number of rows and columns
         self.board = board
+        self.captured_pieces = captured_pieces     # indicates the amount of pieces captured by each player
         self.turn = turn                # who's playing next
-        self.parent=parent
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
         self.previous_boards = previous_boards     # saves both boards originated by each player's last move
@@ -21,26 +19,27 @@ class GameState:
             self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])
         else:
             self.empty_positions = empty_positions     # stores every empty position in the current board
-        if self.is_game_finished():
-            self.end_game()
+        self.komi = 5.5          # predefined value to be added to white's score
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self,i,j):         # placing a piece on the board
-        next_board = deepcopy(self.board)
-        next_board[i][j] = self.turn
-        next_board = check_for_captures(next_board, self.turn)
-        next_previous_boards = deepcopy(self.previous_boards)
-        next_previous_boards[self.turn] = deepcopy(next_board)
-        next_empty_positions = deepcopy(self.empty_positions)
-        next_empty_positions.remove((i,j))
-        next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
-        return next_state
+        self.board[i][j] = self.turn    # puts a piece in the desired position
+        self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
+        self.check_for_captures()
+        self.play_idx += 1      # increments the play counter
+        self.pass_count = 0     # resets the consecutive pass counter
+        self.turn = -self.turn
+        self.empty_positions.remove((i,j))
+        if self.is_game_finished():
+            self.end_game()
         
     def pass_turn(self):        # a player chooses to "pass"
-        next_previous_boards = deepcopy(self.previous_boards)
-        next_previous_boards[self.turn] = deepcopy(self.board)
-        next_state = GameState(self.board,-self.turn,self.play_idx+1,self.pass_count+1,next_previous_boards,self.empty_positions,parent=self)
-        return next_state
+        self.previous_boards[self.turn] = deepcopy(self.board)   # saves this board
+        self.play_idx += 1      # increments the play counter
+        self.pass_count += 1    # increments the consecutive pass counter
+        self.turn = -self.turn
+        if self.is_game_finished():
+            self.end_game()
             
     def is_move_valid(self,i,j):
         return (i,j) in self.check_possible_moves()
@@ -75,7 +74,24 @@ class GameState:
             possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
         return possible_moves
         
-    
+    def check_for_captures(self):   # checking captured pieces after a move
+        player_checked = -self.turn
+        for i in range(self.n):
+            for j in range(self.n):
+                if self.board[i][j] != player_checked:
+                    continue    # only checks for captured pieces of the player who didn't make the last move
+                captured_group = self.captured_group(i,j)
+                if captured_group is not None:
+                    for (x,y) in captured_group:
+                        if self.board[x][y]==1:
+                            captor = -1
+                        elif self.board[x][y]==-1:
+                            captor = 1
+                        else:
+                            raise ValueError("This should be a captured piece")
+                        self.captured_pieces[captor]+=1   # a player captures an opponent's piece
+                        self.board[x][y] = 0
+                        self.empty_positions.add((x,y))
 
     # returns None if this position isn't captured, otherwise it returns the positions of the captured group to which (i,j) belongs
     def captured_group(self,i,j):
@@ -105,7 +121,7 @@ class GameState:
         captured_territories = self.captured_territories_count()
         n_stones = self.get_number_of_stones()
         scores[1] += captured_territories[1] + n_stones[1]
-        scores[-1] += captured_territories[-1] + n_stones[-1] + KOMI
+        scores[-1] += captured_territories[-1] + n_stones[-1] + self.komi
         return scores
      
     def get_number_of_stones(self):     # calculates the number of stones each player has on the board
@@ -272,7 +288,7 @@ def mousePos(game):
 def switchPlayer(turn):
     return -turn
     
-def human_v_human(game: GameState, screen):    # main method that runs a human vs human game and implements a GUI
+def human_v_human(game: Game, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
     step=0
     while game.end==0:
@@ -284,7 +300,7 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
 
         if event.type == pygame.KEYDOWN:    # tecla P = dar pass
             if event.key == pygame.K_p:
-                game = game.pass_turn()
+                game.pass_turn()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             targetCell = mousePos(game)
@@ -292,15 +308,13 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             i,j = targetCell[1],targetCell[0]
             if not game.is_move_valid(i,j):    # checks if move is valid
                 continue    # if not, it expects another event from the same player
-            game = game.move(i,j)
-            if not (np.array_equal(prevBoard,game.board)):
-                turn = switchPlayer(turn)
+            game.move(i,j)
+            if not (np.array_equal(prevBoard,game.board)):          # !!! tem que ser implementado dentro do Game  !!!
+                turn = switchPlayer(turn)                           # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
-            step+=1
-            arr=gen_batch(game)
-            np.savetxt(f'go/convertiontest/frame{step}.txt',arr.reshape(arr.shape[0], -1))
+            np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
         # to display the winner
         if game.end != 0:
             drawResult(game,screen)
@@ -312,6 +326,7 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             pygame.display.update()
             time.sleep(4)
         pygame.display.update()
+        step+=1
 
             
 def ask_board_size():
@@ -329,7 +344,7 @@ def ask_board_size():
 def main():
     n = ask_board_size()
     initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
-    initial_state = GameState(initial_board)
+    initial_state = Game(initial_board)
     pygame.init()
     screen = setScreen()
     drawBoard(initial_state, screen)

@@ -1,7 +1,7 @@
 import numpy as np
 import socket
 import time
-from Go import Game as Go
+from OldGo import Game as Go
 
 
 games = ["A4x4", "A5x5", "A6x6", "G7x7", "G9x9"]
