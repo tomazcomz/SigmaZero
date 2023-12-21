@@ -14,8 +14,12 @@ def convert(gamestate,prev):
     for s in range(8):
         if s==0:
             board=gamestate.board
+            #print(board)
         else:
+            #print(s)
+            #print(prev)
             board=prev[7-s]
+            #print(board)
         for i in range(len(frame)):
             for j in range(len(frame[0])):
                 if (board[i][j]==-1):
@@ -32,5 +36,15 @@ def get_previous(gamestate,i,list):
     if i==0:
         list.append(gamestate.board)
         return list
-    list.append(get_previous(gamestate.previous_states[0]),i,list)
+    if (gamestate.parent==None):
+        blank(gamestate,list,i)
+        return np.zeros(shape=gamestate.board.shape)
+    #print(gamestate.parent.board)
+    list.append(get_previous(gamestate.parent,i,list))
+    #print(list)
+    #print(i)
     return list
+
+def blank(gamestate,list,i):
+    for j in range(i):
+        list.append(np.zeros(shape=gamestate.board.shape))

@@ -314,7 +314,7 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
-            np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
+            #np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
         # to display the winner
         if game.end != 0:
             drawResult(game,screen)
