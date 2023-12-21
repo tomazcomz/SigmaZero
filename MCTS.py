@@ -51,7 +51,7 @@ class Node:
         
         return selected
     
-    def ucb(self, child): # getting the _avantage_
+    def ucb(self, child): 
         # mean_action_value Q=W/N
         if child.visit_count==0:
             mean_action_value=0 
@@ -59,17 +59,13 @@ class Node:
         else:
             mean_action_value=child.total_action_value/child.visit_count
 
-            # mean_action_value=1-((child.total_action_value/child.visit_count)+1)/2
-            # '1-' as a parent we want the child that has very low mean_action_value: putting the opponent in bad pos
-            # '+1' and '/2' because we want values between 0 and 1 (without it its between -1 and 1)
-
         return mean_action_value+self.args['cput']*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
 
-    def expand(self): # to do
+    def expand(self, p): 
         action = self.untried_actions.pop()
         next_state = self.game_state.move(action[0], action[1])
-        child = Node(next_state, parent=self, p_action=action)
-        return child
+        child = Node(next_state, parent=self, p_action=action, prior_prob=p)
+        self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -95,12 +91,19 @@ class MCTS:
                 node=node.select()
 
             # check if node is terminal or not
-            terminal=Go.is_game_finished(self.game_state)
+            terminal=Go.is_game_finished(node.game_state)
 
             # expand and evaluate
             if not terminal:
-                p, v = self.model.predict() # to do
-                node=node.expand(p)
+                p, v = self.model.predict(node.game_state) # to do
+                node.expand(p) # adding childs with policy from the NN to list children
+                
+                # parte que falta - qual o value que se propagará?
+                """children=Go.create_children(node)
+                for child in children:
+                    Then for each possible action on the new node, we add a new edge (s, a). 
+                    We initialize each edge with the visit count N, W, and Q to 0. 
+                    And we record the corresponding v and p."""
 
             # backpropagate
             node.backprop(v)
@@ -118,7 +121,7 @@ class MCTS:
 
 # test part ----------------------------------------------------------------
 args = {
-    'C': 10**-4,
+    'cput': 10**-4,
     'num_searches': 1600
 }
 
