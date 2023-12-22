@@ -316,6 +316,7 @@ def human_v_human(game: Game, screen):    # main method that runs a human vs hum
             drawPieces(game, screen)
             np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
         # to display the winner
+            print(game.end)
         if game.end != 0:
             drawResult(game,screen)
             events = pygame.event.get()

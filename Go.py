@@ -20,8 +20,6 @@ class GameState:
             self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])
         else:
             self.empty_positions = empty_positions   # set that stores every empty position in the current board; it is used to facilitate the determination of possible moves in each game state
-        if is_game_finished(self):
-            self.end_game()
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self,i,j):         # placing a piece on the board
@@ -51,7 +49,10 @@ class GameState:
     
     def get_scores(self):      # scoring: captured territories + player's stones + komi
         scores = {1:0, -1:0}
-        captured_territories = self.captured_territories_count()
+        if self.play_idx == 0:
+            captured_territories = {1:0, -1:0}
+        else:
+            captured_territories = self.captured_territories_count()
         n_stones = self.get_number_of_stones()
         scores[1] += captured_territories[1] + n_stones[1]
         scores[-1] += captured_territories[-1] + n_stones[-1] + KOMI
@@ -129,10 +130,7 @@ def check_for_captures(board, turn, empty_positions:set = set()):   # method tha
     return board, empty_positions   # returning the new board and the new empty positions list
 
 def is_move_valid(state:GameState,i,j):
-    if is_suicide(state.board,state.turn,i,j) or violates_superko(state.board,state.turn,state.previous_boards[state.turn],i,j):
-        return False
-    return True
-    # return (i,j) in check_possible_moves(state)
+    return (i,j) in check_possible_moves(state)
     
 def check_possible_moves(state: GameState):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
     possible_moves = deepcopy(state.empty_positions)
@@ -169,7 +167,7 @@ def is_game_finished(state: GameState):
         print("Reason for game ending: 2 passes in a row")
         return True
     if state.play_idx >= (state.n**2)*2:    # game ends if n*n*2 plays have occurred
-        print("Reason for game ending: the limit of n*n*2 plays was exceeded")
+        print(f"Reason for game ending: the limit of {state.n**2} plays was exceeded")
         return True
     return False
 
@@ -283,6 +281,8 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
         if event.type == pygame.KEYDOWN:    # tecla P = dar pass
             if event.key == pygame.K_p:
                 game = game.pass_turn()
+            if is_game_finished(game):
+                game.end_game()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             targetCell = mousePos(game)
@@ -296,6 +296,8 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
+            if is_game_finished(game):
+                game.end_game()
             #np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
         # to display the winner
         if game.end != 0:
