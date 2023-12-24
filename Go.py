@@ -4,18 +4,20 @@ import copy as cp
 from copy import deepcopy
 import time
 from go.utils import flood_fill,get_captured_territories
+from go.inputconverter import *
 
 KOMI = 5.5   # predefined value to be added to white's score
 
 
 class GameState:
-    def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None):
+    def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None,parent=None):
         self.n = len(board)             # number of rows and columns
         self.board = board
         self.turn = turn                # who's playing next
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
         self.previous_boards = previous_boards     # saves both boards originated by each player's last move
+        self.parent=parent
         if empty_positions is None:
             self.empty_positions = set([(x,y) for x in range(self.n) for y in range(self.n)])
         else:
@@ -29,13 +31,13 @@ class GameState:
         next_previous_boards = deepcopy(self.previous_boards)
         next_previous_boards[self.turn] = deepcopy(next_board)
         next_empty_positions.remove((i,j))
-        next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions)
+        next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
         return next_state
         
     def pass_turn(self):        # a player chooses to "pass"
         next_previous_boards = deepcopy(self.previous_boards)
         next_previous_boards[self.turn] = deepcopy(self.board)
-        next_state = GameState(self.board,-self.turn,self.play_idx+1,self.pass_count+1,next_previous_boards,self.empty_positions)
+        next_state = GameState(self.board,-self.turn,self.play_idx+1,self.pass_count+1,next_previous_boards,self.empty_positions,parent=self)
         return next_state
             
     def get_winner(self):       # returns the player with the highest score and the scores
@@ -271,6 +273,7 @@ def switchPlayer(turn):
     
 def human_v_human(game: GameState, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
+    step=0
     while game.end==0:
         drawBoard(game, screen)
         drawPieces(game, screen)
@@ -298,7 +301,9 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             drawPieces(game, screen)
             if is_game_finished(game):
                 game.end_game()
-            #np.savetxt(f'go/convertiontest/step{step}.txt',game.board)
+            arr=gen_batch(game)
+            np.savetxt(f'go/convertiontest/step{step}.txt',arr.reshape(arr.shape[0], -1))
+            step+=1
         # to display the winner
         if game.end != 0:
             drawResult(game,screen)

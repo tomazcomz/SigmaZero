@@ -5,7 +5,7 @@ Para t<7 todos para trás, são em branco
 '''
 
 def gen_batch(gamestate):
-    prev=get_previous(gamestate,8,[])
+    prev=get_previous(gamestate,7,[])
     frame=convert(gamestate,prev)
     return frame
 
@@ -17,7 +17,7 @@ def convert(gamestate,prev):
             #print(board)
         else:
             #print(s)
-            #print(prev)
+            #print(i for i in prev)
             board=prev[7-s]
             #print(board)
         for i in range(len(frame)):
@@ -32,17 +32,20 @@ def convert(gamestate,prev):
 
 # Print disto primeiro para ver se i está correto
 def get_previous(gamestate,i,list):
-    i-=1
+    #print(gamestate.parent)
     if i==0:
         list.append(gamestate.board)
         return list
     if (gamestate.parent==None):
+        print(i)
         blank(gamestate,list,i)
         return np.zeros(shape=gamestate.board.shape)
     #print(gamestate.parent.board)
-    list.append(get_previous(gamestate.parent,i,list))
-    #print(list)
-    #print(i)
+    i-=1
+    #print(list," pre")
+    get_previous(gamestate.parent,i,list)
+    list.append(gamestate.board)
+    #print(list," post")
     return list
 
 def blank(gamestate,list,i):
