@@ -1,9 +1,9 @@
 
 ### MCTS
-    - obter p e v dados pela NN
-    - questão da diferença nos dois jogos
-    - game_state e state iguais?
-    - expand!
+    - obter p e v dados pela NN (sintaxe)
+    - nao esquecer de adaptar para o ataxx também
+    - game_state tipo de input
+    - ver linhas 91-96, parte do expand que nao percebo bem
 
 
 ### Rede:

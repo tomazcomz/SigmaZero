@@ -24,10 +24,9 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, state, game_state, args, untried_actions=None, parent=None, p_action=None, prior_prob=0):
+    def __init__(self, game_state, args, untried_actions=None, parent=None, p_action=None, prior_prob=0):
         self.game_state=game_state
         self.args=args
-        self.state=state
         self.parent=parent
         self.p_action=p_action
         self.untried_actions = Go.check_possible_moves(self.game_state)
@@ -39,7 +38,7 @@ class Node:
     def fully_expanded(self):
         return len(self.children)>0 # if no expandable moves and there are children
     
-    def select(self):
+    def select(self): # chooses child with best ucb 
         if not self.children:
             return None
         selected = max(self.children, key=lambda child: self.ucb(child))
@@ -49,10 +48,8 @@ class Node:
         # mean_action_value Q=W/N
         if child.visit_count==0:
             mean_action_value=0 
-
         else:
             mean_action_value=child.total_action_value/child.visit_count
-
         return mean_action_value+self.args['cput']*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
 
     def expand(self, p): 
@@ -64,7 +61,6 @@ class Node:
     def backprop(self, v):
         self.total_action_value  += v
         self.visit_count += 1
-
         if self.parent is not None:
             self.parent.backprop(v)
 
@@ -74,8 +70,8 @@ class MCTS:
         self.args=args
         self.model=model
     
-    def play(self,state):
-        root=Node(self.game_state,self.args,state)
+    def play(self,game_state):
+        root=Node(self.game_state,self.args)
 
         for _ in range(self.args['num_searches']):
             node=root
@@ -92,12 +88,12 @@ class MCTS:
                 p, v = self.model.predict(node.game_state) # to do
                 node.expand(p) # adding childs with policy from the NN to list children
                 
-                # parte que falta - qual o value que se propagará?
+                # parte incerta - qual o value que se propagará? v do nó folha
                 """children=Go.create_children(node)
                 for child in children:
                     Then for each possible action on the new node, we add a new edge (s, a). 
                     We initialize each edge with the visit count N, W, and Q to 0. 
-                    And we record the corresponding v and p."""
+                    And we record the corresponding v and p.""" 
 
             # backpropagate
             node.backprop(v)
