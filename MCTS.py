@@ -1,9 +1,10 @@
 import math
 import numpy as np
-import OldGo
+import Go
+""" import OldGo
 import Attaxx 
 from ioannina import Neura
-import Go
+ """
 
 """ 
 select, expand and evaluate, backup, play
@@ -14,7 +15,7 @@ N = visit_count
 W = total_action_value
 Q = mean_action_value
 P = prior_prob of selecting that edge
-exploration constant = c_puct 
+exploration constant = cpuct 
 
 Q = W/N # controlls exploitation
 U = cput*p*(math.sqrt(sum_N)/(1+N)) # controlls exploration
@@ -44,7 +45,7 @@ class Node:
         selected = max(self.children, key=lambda child: self.ucb(child))
         return selected.select()
     
-    def ucb(self, child): 
+    def ucb(self, child): # uses variant of the PUCT algorithm
         # mean_action_value Q=W/N
         if child.visit_count==0:
             mean_action_value=0 
@@ -70,7 +71,7 @@ class MCTS:
         self.args=args
         self.model=model
     
-    def play(self,game_state):
+    def play(self):
         root=Node(self.game_state,self.args)
 
         for _ in range(self.args['num_searches']):
@@ -115,4 +116,5 @@ args = {
     'num_searches': 1600
 }
 
-mcts=MCTS()
+mcts=MCTS(args)
+
