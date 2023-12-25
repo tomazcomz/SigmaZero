@@ -66,12 +66,17 @@ class Node:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, game_state, args, model):
-        self.game_state=game_state
+    def __init__(self, args, model):
+        #self.game_state=game_state
         self.args=args
         self.model=model
     
-    def play(self):
+    def play(self, state):
+        """ Confusão com states.
+        self.game_state e node.game_state
+        ou 
+        dar um state e ver por aí"""
+
         root=Node(self.game_state,self.args)
 
         for _ in range(self.args['num_searches']):
