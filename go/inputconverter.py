@@ -37,7 +37,7 @@ def get_previous(gamestate,i,list):
         list.append(gamestate.board)
         return list
     if (gamestate.parent==None):
-        print(i)
+        # print(i)
         blank(gamestate,list,i)
         return np.zeros(shape=gamestate.board.shape)
     #print(gamestate.parent.board)
