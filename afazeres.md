@@ -40,3 +40,5 @@
 # É Preciso Fazer:
 
     - Action com base na Policy retornada do MCTS
+    - Função com transformação aleatória {1,..,8}: rotação ou reflexão.
+    - Criação de label para cada jogada

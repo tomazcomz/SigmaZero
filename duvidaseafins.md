@@ -13,3 +13,4 @@
 ### Rede:
 
     - número de filtros
+    - número de epocas

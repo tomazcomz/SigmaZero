@@ -4,6 +4,7 @@ from keras import layers
 import numpy as np
 from keras.models import Model
 import os
+import names
 
 """ 
 
@@ -12,20 +13,20 @@ Train:
 
 """
 class Neura:
-    def __init__(self,n_resblocks,game):        # loss function and learning rate?
+    def __init__(self,n_resblocks,game,optmizador):        # loss function and learning rate?
         self.input(game)
         self.build(n_resblocks,self.nf)
+        self.name=names.get_last_name()
+        self.optmizador=optmizador
     
     def input(self,game):
         if (game.type==0):
             self.state_dim=2
             self.nf=256                 # tem que ser menos
-            self.action_space=
             self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
         else:
             self.state_dim=3
-            self.nf=256 
-            self.action_space=
+            self.nf=256
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
 
 
@@ -65,6 +66,9 @@ class Neura:
     
     def loss(val,zed,pist,pol,state):
         # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
+
+
+        # medium=(z-v)^2 -pi^T(dot)log(p)+c||O||^2                  O=teta   c=0.0001
         return
     
     def build(self,n_res,nf):
@@ -81,15 +85,38 @@ class Neura:
     def summary(self):
         self.net.summary()
         return
+    
+    def compilar(self):
+        self.compile(optimizer=self.optmizador,loss=self.loss())
 
+
+
+#def create_train_set(ds_location):
+
+def train(rede: Neura,ds_location,load=True):
+    x,y=create_train_set(ds_location)
+    rede.compilar()
+    if (load):
+        rede.load_weights(f'pesos/{rede.name}.h5')
+    history=rede.fit(x,y,batch_size=8)   
+
+
+
+
+
+
+
+
+
+'''------------------------------------  CUDA-RELATED  --------------------------------------------'''
 def exports():   
     # Set CUDA and CUPTI paths  
-    os.environ['CUDA_HOME'] = '/usr/local/cuda'
-    os.environ['PATH']= '/usr/local/cuda/bin:$PATH'  
-    os.environ['CPATH'] = '/usr/local/cuda/include:$CPATH'  
-    os.environ['LIBRARY_PATH'] = '/usr/local/cuda/lib64:$LIBRARY_PATH'  
-    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH'  
-    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
+    os.environ['CUDA_HOME'] = '/tomazcomz/local/cuda'
+    os.environ['PATH']= '/tomazcomz/local/cuda/bin:$PATH'  
+    os.environ['CPATH'] = '/tomazcomz/local/cuda/include:$CPATH'  
+    os.environ['LIBRARY_PATH'] = '/tomazcomz/local/cuda/lib64:$LIBRARY_PATH'  
+    os.environ['LD_LIBRARY_PATH'] = '/tomazcomz/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH'  
+    os.environ['LD_LIBRARY_PATH'] = '/tomazcomz/local/cuda/lib64:$LD_LIBRARY_PATH'
 
 def opts():
     os.environ['CUDA_CACHE_DISABLE'] = '0'                  # disable caching
