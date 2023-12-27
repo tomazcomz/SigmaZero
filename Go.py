@@ -5,6 +5,7 @@ from copy import deepcopy
 import time
 from go.utils import flood_fill,get_captured_territories
 from go.inputconverter import *
+from ioannina import Neura
 
 KOMI = 5.5   # predefined value to be added to white's score
 
@@ -273,8 +274,10 @@ def mousePos(game:GameState):
 def switchPlayer(turn):
     return -turn
     
-def human_v_human(game: GameState, screen):    # main method that runs a human vs human game and implements a GUI
+def human_v_human(game: GameState, screen,rede: Neura):    # main method that runs a human vs human game and implements a GUI
     turn = 1
+    m=rede.name
+    t=time.time()
     step=0
     while game.end==0:
         drawBoard(game, screen)
@@ -304,7 +307,7 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             if is_game_finished(game):
                 game.end_game()
             arr=gen_batch(game)
-            np.savetxt(f'go/convertiontest/step{step}.txt',arr.reshape(arr.shape[0], -1))
+            np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
             step+=1
         # to display the winner
         if game.end != 0:

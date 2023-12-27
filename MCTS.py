@@ -66,10 +66,12 @@ class Node:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, args, model):
+    def __init__(self, args,tind, model,eva=False):
         #self.game_state=game_state
         self.args=args
         self.model=model
+        self.evaluate=eva
+        self.ti=tind            # ver * em ideias.md
     
     def play(self, state):
         """ Confusão com states.
@@ -104,7 +106,7 @@ class MCTS:
             # backpropagate
             node.backprop(v)
 
-        if self.game_state.play_idx-1<=5:
+        if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
             temp=0
