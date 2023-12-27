@@ -2,7 +2,6 @@ import socket
 import random
 import time
 
-Game="A4x4" # "A6x6" "G7x7" "G9x9" "A5x5"
 
 def generate_random_move():
     x = random.randint(0, 9)
@@ -28,15 +27,15 @@ def connect_to_server(host='localhost', port=12345):
     
     if "1" in response:
         ag=1
+        turn=True
     else:
         ag=2
-    first=True
+        turn=False
     
     while True:
         # Generate and send a random move
-        
-        if ag == 1 or not first:
-            move = generate_random_move2()
+        if ag == 1 or not turn:
+            move = generate_random_move()
             time.sleep(1)
             client_socket.send(move.encode())
             print("Send:",move)
@@ -46,7 +45,7 @@ def connect_to_server(host='localhost', port=12345):
             print(f"Server Response1: {response}")
             if "END" in response: break
          
-        first=False
+        turn=False
         response = client_socket.recv(1024).decode()
         print(f"Server Response2: {response}")
         if "END" in response: break

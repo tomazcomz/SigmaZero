@@ -2,11 +2,10 @@ import numpy as np
 import socket
 import time
 from Go import GameState as Go, check_possible_moves, is_game_finished
-from go.utils import flood_fill,get_captured_territories
 
 
 games = ["A4x4", "A5x5", "A6x6", "G7x7", "G9x9"]
-game = games[0]
+game = games[3]
 
 
 def is_valid_move_go(game,i,j):    # implementing the logic to check if the move is valid
@@ -61,6 +60,7 @@ def start_server_go(host='localhost', port=12345):
                     GameState = GameState.move(i,j)
                 else:
                     agents[current_agent].sendall(b'INVALID')
+                    continue
                 
             # checking if the game is over
             if is_game_finished(GameState):

@@ -136,6 +136,8 @@ def is_move_valid(state:GameState,i,j):
     
 def check_possible_moves(state: GameState):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
     possible_moves = deepcopy(state.empty_positions)
+    if state.play_idx == 0:
+        return possible_moves
     moves_to_be_removed = set()
     for move in possible_moves:
         i,j=move
@@ -329,7 +331,7 @@ def ask_board_size():
     return n
         
         
-def main():
+if __name__ == "__main__":
     n = ask_board_size()
     initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
     initial_state = GameState(initial_board)
@@ -338,7 +340,6 @@ def main():
     drawBoard(initial_state, screen)
     human_v_human(initial_state, screen)
         
-main()
 
 # black plays first
 # black -> 1 -> player 1
