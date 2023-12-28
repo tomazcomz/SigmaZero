@@ -43,6 +43,10 @@ quando se da input de um estado à rede neuronal, dar tambem input as suas rotac
         - 7x7:  5
         - 9x9:  7
 
+
+        - 4x4:  2
+        - 6x6:  3
+
 # Rede:
 
     - Batch Size para Attaxx

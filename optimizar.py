@@ -15,7 +15,7 @@ def train(rede: Neura,ds_location,load=True):
     x,y=create_train_set(ds_location)
     rede.compilar()
     if (load):
-        rede.load_weights(f'pesos/{rede.name}.h5')
+        rede.net.load_weights(f'pesos/{rede.name}.h5')
     for i in range(1000):
-        history=rede.fit(x,y)
-    rede.save_weights(f'pesos/{rede.name}.h5')
+        history=rede.net.fit(x,y)
+    rede.net.save_weights(f'pesos/{rede.name}.h5')

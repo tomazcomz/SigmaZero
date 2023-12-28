@@ -289,11 +289,11 @@ def chooseBoard():
     
 def main():
         table = chooseBoard()
-        """ pygame.init()
-        screen = setScreen() """
+        '''pygame.init()
+        screen = setScreen()'''
         game = readBoard(table)
-        """ drawBoard(game, screen)
-        jogo_Humano_Humano(game, screen) """
+        '''drawBoard(game, screen)
+        jogo_Humano_Humano(game, screen)'''
         return game
 
 start_time = time.time()

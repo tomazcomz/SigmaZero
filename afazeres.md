@@ -39,7 +39,8 @@
 
 # É Preciso Fazer:
 
-
+    - agent_v_agent attaxx
+    - avaliar.makegame
     - Dirichlet Noise
     - Action com base na Policy PI retornada do MCTS
     - Função com transformação aleatória {1,..,8}: rotação ou reflexão. dentro do convert:
