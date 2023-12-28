@@ -321,7 +321,7 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             time.sleep(4)
         pygame.display.update()
 
-            
+
 def ask_board_size():
     inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
     if inp == 1:
