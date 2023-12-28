@@ -46,7 +46,7 @@ def _flood_fill(i,j,original_piece,board,group_positions,_visited):
     return False, group_positions
 
 
-# returns the positions of the captured group (i,j) belongs to and which player is the captor. if (i,j) isn't captured, return None
+# returns the positions of the captured group i,j belongs to and which player is the captor. if i,j isn't captured, returns None
 def get_captured_territories(i,j,board):
     ct_group, captor = _get_captured_territories(i,j,board,ct_group=set(),captor=0,visited=set())
     return ct_group, captor
@@ -57,6 +57,7 @@ def get_captured_territories(i,j,board):
 # Therefore, A does not belong to Black's territory either. 
 # In conclusion, A is neutral territory.
 
+# Definition:
 # An empty point only belongs to somebody's territory, 
 #   if all the empty intersections that form a connected group with it are adjacent to stones of that player's territory.
 
