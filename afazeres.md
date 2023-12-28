@@ -39,6 +39,16 @@
 
 # É Preciso Fazer:
 
-    - Action com base na Policy retornada do MCTS
-    - Função com transformação aleatória {1,..,8}: rotação ou reflexão.
+    - agent_v_agent attaxx
+    - avaliar.makegame
+    - Dirichlet Noise
+    - Action com base na Policy PI retornada do MCTS
+    - Função com transformação aleatória {1,..,8}: rotação ou reflexão. dentro do convert:
+                
+                Função i -> transformação
+                Escolher i aleatoriamente
+                Função transfromação(board,i) (switch case)
+
     - Criação de label para cada jogada
+    - Mudar Attaxx, expandir por coordenada e não por jogada
+    - Função para mapear jogada do Attaxx por coordenadas em vez de acção

@@ -6,6 +6,7 @@ import time
 from go.utils import flood_fill,get_captured_territories
 from go.inputconverter import *
 from ioannina import Neura
+from MCTS import MCTS
 
 KOMI = 5.5   # predefined value to be added to white's score
 
@@ -307,7 +308,7 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             if is_game_finished(game):
                 game.end_game()
             arr=gen_batch(game)
-            np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
+            #np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
             step+=1
         # to display the winner
         if game.end != 0:
@@ -321,7 +322,24 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             time.sleep(4)
         pygame.display.update()
 
-
+def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS):
+    turn = 1
+    while game.end==0:
+        if turn==1:
+            # i,j = alpha_i.play() 
+            pass
+        if not is_move_valid(game,i,j):    # checks if move is valid
+            continue    # if not, it expects another event from the same player
+        turn = switchPlayer(turn)
+        game = game.move(i,j)    
+        if is_game_finished(game):
+            game.end_game()
+        #arr=gen_batch(game)
+        #np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
+        # to display the winner
+    if game.end != 0:
+        return game.winner
+            
 def ask_board_size():
     inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
     if inp == 1:

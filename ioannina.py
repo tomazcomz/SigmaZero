@@ -3,8 +3,10 @@ from tensorflow import keras
 from keras import layers
 import numpy as np
 from keras.models import Model
-import os
+import os, random
 import names
+from go.inputconverter import *
+from shutil import copy
 
 """ 
 
@@ -13,22 +15,20 @@ Train:
 
 """
 class Neura:
-    def __init__(self,n_resblocks,game,optmizador):        # loss function and learning rate?
+    def __init__(self,game,n_resblocks=19,optmizador=None):        # loss function and learning rate?
         self.input(game)
         self.build(n_resblocks,self.nf)
         self.name=names.get_last_name()
         self.optmizador=optmizador
-    
+
     def input(self,game):
         if (game.type==0):
-            self.state_dim=2
             self.nf=256                 # tem que ser menos
             self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
         else:
-            self.state_dim=3
             self.nf=256
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
-
+        self.action_space=len(game.board)*len(game.board[0])+1
 
     # Se calhar devíamos adaptar o kernel size, devido as dimensões do tabuleiro
     def convblock(self,input,nf):
@@ -64,12 +64,13 @@ class Neura:
         tanh=layers.Activation(activation='tanh',name='valout')(fcs)
         return tanh
     
-    def loss(val,zed,pist,pol,state):
+    def loss(val,zed,pist,pol):
+        pist=np.array(pist)
+        pol=np.transpose(np.array(pol))
         # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
-
-
         # medium=(z-v)^2 -pi^T(dot)log(p)+c||O||^2                  O=teta   c=0.0001
-        return
+        # l2 regularization deve ser feita nas camadas?
+        return (zed-val)**2-np.dot(pist,np.log(pol))
     
     def build(self,n_res,nf):
         conv=self.convblock(self.inpt,nf)
@@ -87,23 +88,15 @@ class Neura:
         return
     
     def compilar(self):
-        self.compile(optimizer=self.optmizador,loss=self.loss())
+        self.net.compile(optimizer=self.optmizador,loss=self.loss())
 
-
-
-#def create_train_set(ds_location):
-
-def train(rede: Neura,ds_location,load=True):
-    x,y=create_train_set(ds_location)
-    rede.compilar()
-    if (load):
-        rede.load_weights(f'pesos/{rede.name}.h5')
-    history=rede.fit(x,y,batch_size=8)   
-
-
-
-
-
+    def copy_weights(self,bestname):
+        src=f'pesos/best/{bestname}.h5'
+        dest=f'pesos/{self.name}.h5'
+        copy(src, dest)
+    
+    def make_best(self):
+        self.net.save_weights(f'pesos/best/{self.name}.h5')
 
 
 
