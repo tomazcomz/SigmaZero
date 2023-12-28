@@ -32,17 +32,21 @@ def convert(gamestate,prev):
 
 def get_previous(gamestate,i,list,ti):
     if i==0:
-        # transformar gamestate.board,ti
-        list.append(gamestate.board)
+        list.append(transform(gamestate.board, ti))
         return list
     if (gamestate.parent==None):
         blank(gamestate,list,i)
         return np.zeros(shape=gamestate.board.shape)
     i-=1
     get_previous(gamestate.parent,i,list,ti)
-    # transformar gamestate.board,ti
-    list.append(gamestate.board)
+    list.append(transform(gamestate.board, ti))
     return list
+
+def transform(board, ti):
+    if ti>3:
+        board = np.flipud(board)
+        ti -= 4
+    return np.rot90(board, ti)
 
 def blank(gamestate,list,i):
     for j in range(i):

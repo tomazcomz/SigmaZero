@@ -53,11 +53,12 @@ class Node:
             mean_action_value=child.total_action_value/child.visit_count
         return mean_action_value+self.args['cput']*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
 
-    def expand(self, p): 
-        action = self.untried_actions.pop()
-        next_state = self.game_state.move(action[0], action[1])
-        child = Node(next_state, parent=self, p_action=action, prior_prob=p)
-        self.children.append(child)
+    def expand(self, p):
+        for _ in range(self.untried_actions.len()):
+            action = self.untried_actions.pop()
+            next_state = self.game_state.move(action[0], action[1])
+            child = Node(next_state, parent=self, p_action=action, prior_prob=p)
+            self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -114,7 +115,11 @@ class MCTS:
         action_prob=np.zeros(self.game_state.n**2+1)
         for child in root.children:
             action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
-        return action_prob
+        max_prob_index = np.argmax(action_prob)
+        if max_prob_index == self.game_state.n**2:
+            return (-1, -1)     # definir isto como "pass"
+        else:
+            return ((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
 
 
 # test part ----------------------------------------------------------------
