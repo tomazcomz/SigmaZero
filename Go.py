@@ -5,9 +5,9 @@ from copy import deepcopy
 import time
 from go.utils import flood_fill,get_captured_territories
 from go.inputconverter import *
-from ioannina import Neura
-from MCTS import *
-import selfplay
+# from ioannina import Neura
+# from MCTS import *
+# import selfplay
 
 KOMI = 5.5   # predefined value to be added to white's score
 
@@ -28,8 +28,9 @@ class GameState:
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self, action):         # placing a piece on the board
+        i,j = action
         next_board = deepcopy(self.board)
-        next_board[action[0]][action[1]] = self.turn
+        next_board[i][j] = self.turn
         next_board, next_empty_positions = check_for_captures(next_board, self.turn, self.empty_positions)
         next_previous_boards = deepcopy(self.previous_boards)
         next_previous_boards[self.turn] = deepcopy(next_board)
@@ -50,7 +51,7 @@ class GameState:
         elif scores[1] > scores[-1]:
             return 1, scores    # player 1 (black, 1) wins
         else:
-            return 2, scores    # player 2 (white, -1) wins
+            return -1, scores    # player 2 (white, -1) wins
     
     def get_scores(self):      # scoring: captured territories + player's stones + komi
         scores = {1:0, -1:0}
@@ -98,16 +99,16 @@ class GameState:
     # methods used to run the Monte Carlo Tree Search algorithm
     def create_children(self):   # creating all the possible new states originated from the current game state
         children = []
-        for move in check_possible_moves(self):
-            i,j=move
+        for action in check_possible_moves(self):
+            i,j=action
             new_state = deepcopy(self)
-            new_state.move(i,j)
+            new_state.move((i,j))
             children.append(new_state)
         return children
             
     def get_next_state(self,state,action):   # given an action, this method returns the resulting game state
         next_state = deepcopy(state)
-        next_state.move(action)
+        next_state = next_state.move(action)
         return next_state
             
     def get_value_and_terminated(self,action):   ################### (not sure if this is correct)
@@ -134,7 +135,8 @@ def check_for_captures(board, turn, empty_positions:set = set()):   # method tha
                     empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
     return board, empty_positions   # returning the new board and the new empty positions list
 
-def is_move_valid(state:GameState,i,j):
+def is_move_valid(state:GameState,move):
+    i,j=move
     return (i,j) in check_possible_moves(state)
     
 def check_possible_moves(state: GameState):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
@@ -223,7 +225,7 @@ def drawResult(game: GameState, screen):
     result,scores = game.winner,game.scores
     if result == 0:
         text = font.render("Draw!", True, (0,0,0))
-    elif result == 1 or result == 2:
+    elif result == 1 or result == -1:
         result_text(screen,result,scores)
         return
     else:
@@ -235,6 +237,8 @@ def drawResult(game: GameState, screen):
 def result_text(screen,result,scores):
     font = pygame.font.Font('freesansbold.ttf', 32)
     color = {1:"black",2:"white"}
+    if result == -1:
+        result = 2
     text_lines = [
         "Player " + str(result) + " (" + str(color[result]) + ") wins!",
         "",
@@ -276,9 +280,8 @@ def mousePos(game:GameState):
 def switchPlayer(turn):
     return -turn
     
-def human_v_human(game: GameState, screen,rede: Neura):    # main method that runs a human vs human game and implements a GUI
+def human_v_human(game: GameState, screen):    # main method that runs a human vs human game and implements a GUI
     turn = 1
-    m=rede.name
     t=time.time()
     step=0
     while game.end==0:
@@ -298,9 +301,9 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             targetCell = mousePos(game)
             prevBoard = cp.deepcopy(game.board)
             i,j = targetCell[1],targetCell[0]
-            if not is_move_valid(game,i,j):    # checks if move is valid
+            if not is_move_valid(game,(i,j)):    # checks if move is valid
                 continue    # if not, it expects another event from the same player
-            game = game.move(i,j)
+            game = game.move((i,j))
             if not (np.array_equal(prevBoard,game.board)):
                 turn = switchPlayer(turn)
             time.sleep(0.1)
@@ -308,7 +311,7 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             drawPieces(game, screen)
             if is_game_finished(game):
                 game.end_game()
-            arr=gen_batch(game)
+            # arr=gen_batch(game)
             #np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
             step+=1
         # to display the winner
@@ -323,30 +326,30 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             time.sleep(4)
         pygame.display.update()
 
-def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS, sp=False):
-    turn = 1
-    labellist=[]
-    while game.end==0:
-        if turn==1:
-            action = alpha_i.play() 
-            pass
-        else:
-            # i,j=alpha_s.play()
-            pass
-        if not is_move_valid(game,action):    # checks if move is valid
-            continue    # if not, it expects another event from the same player
-        turn = switchPlayer(turn)
-        game = game.move(action)    
-        if is_game_finished(game):
-            game.end_game()
-        if (sp):
-            fname=selfplay.sptrainprocd(game.board,alphas.name)
-            labellist.append(fname)
-        # to display the winner
-    if game.end != 0:
-        if sp:
-            selfplay.labelmaking(labellist,game.winner)
-        return game.winner
+# def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS, sp=False):
+#     turn = 1
+#     labellist=[]
+#     while game.end==0:
+#         if turn==1:
+#             action = alpha_i.play() 
+#             pass
+#         else:
+#             # action=alpha_s.play()
+#             pass
+#         if not is_move_valid(game,action):    # checks if move is valid
+#             continue    # if not, it expects another event from the same player
+#         turn = switchPlayer(turn)
+#         game = game.move(action)    
+#         if is_game_finished(game):
+#             game.end_game()
+#         if (sp):
+#             fname=selfplay.sptrainprocd(game.board,alphas.name)
+#             labellist.append(fname)
+#         # to display the winner
+#     if game.end != 0:
+#         if sp:
+#             selfplay.labelmaking(labellist,game.winner)
+#         return game.winner
             
 def ask_board_size():
     inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
