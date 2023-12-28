@@ -10,12 +10,8 @@ ARGS = {
 
 #def makegame(games: str):
 
-
-
-def avaliar(games,size):
-    #game=makegame(games)
-    icount=0
-    scount=0
+def setind(game,size):
+    tind=0
     if game.type==0:
         match size:
             case 4:
@@ -28,7 +24,12 @@ def avaliar(games,size):
                 tind=5
             case 9:
                 tind=7
-    
+    return tind
+
+def avaliar(games,size):
+    #game=makegame(games)
+    icount=0
+    scount=0
     for i in range(400):
         teta_i=Neura(game)
         teta_i.compilar()

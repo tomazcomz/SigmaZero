@@ -7,6 +7,7 @@ from go.utils import flood_fill,get_captured_territories
 from go.inputconverter import *
 from ioannina import Neura
 from MCTS import MCTS
+import selfplay
 
 KOMI = 5.5   # predefined value to be added to white's score
 
@@ -322,11 +323,15 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             time.sleep(4)
         pygame.display.update()
 
-def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS):
+def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS, sp=False):
     turn = 1
+    labellist=[]
     while game.end==0:
         if turn==1:
             # i,j = alpha_i.play() 
+            pass
+        else:
+            # i,j=alpha_s.play()
             pass
         if not is_move_valid(game,i,j):    # checks if move is valid
             continue    # if not, it expects another event from the same player
@@ -334,10 +339,13 @@ def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS):
         game = game.move(i,j)    
         if is_game_finished(game):
             game.end_game()
-        #arr=gen_batch(game)
-        #np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
+        if (sp):
+            fname=selfplay.sptrainprocd(game.board,alphas.name)
+            labellist.append(fname)
         # to display the winner
     if game.end != 0:
+        if sp:
+            selfplay.labelmaking(labellist,game.winner)
         return game.winner
             
 def ask_board_size():
