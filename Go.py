@@ -6,7 +6,7 @@ import time
 from go.utils import flood_fill,get_captured_territories
 from go.inputconverter import *
 from ioannina import Neura
-from MCTS import MCTS
+from MCTS import *
 
 KOMI = 5.5   # predefined value to be added to white's score
 
@@ -26,13 +26,13 @@ class GameState:
             self.empty_positions = empty_positions   # set that stores every empty position in the current board; it is used to facilitate the determination of possible moves in each game state
         self.end = 0             # indicates if the game has ended ({0,1})
         
-    def move(self,i,j):         # placing a piece on the board
+    def move(self, action):         # placing a piece on the board
         next_board = deepcopy(self.board)
-        next_board[i][j] = self.turn
+        next_board[action[0]][action[1]] = self.turn
         next_board, next_empty_positions = check_for_captures(next_board, self.turn, self.empty_positions)
         next_previous_boards = deepcopy(self.previous_boards)
         next_previous_boards[self.turn] = deepcopy(next_board)
-        next_empty_positions.remove((i,j))
+        next_empty_positions.remove(action)
         next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
         return next_state
         
@@ -104,13 +104,13 @@ class GameState:
             children.append(new_state)
         return children
             
-    def get_next_state(self,i,j):   # given an action, this method returns the resulting game state
-        next_state = deepcopy(self)
-        next_state.move(i,j)
+    def get_next_state(self,state,action):   # given an action, this method returns the resulting game state
+        next_state = deepcopy(state)
+        next_state.move(action)
         return next_state
             
-    def get_value_and_terminated(self,state,i,j):   ################### (not sure if this is correct)
-        new_state = self.move(i,j)
+    def get_value_and_terminated(self,action):   ################### (not sure if this is correct)
+        new_state = self.move(action)
         if is_game_finished(new_state):
             return 1, True
         if np.sum(check_possible_moves(new_state))==0:
@@ -326,12 +326,12 @@ def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS):
     turn = 1
     while game.end==0:
         if turn==1:
-            # i,j = alpha_i.play() 
+            action = alpha_i.play() 
             pass
-        if not is_move_valid(game,i,j):    # checks if move is valid
+        if not is_move_valid(game,action):    # checks if move is valid
             continue    # if not, it expects another event from the same player
         turn = switchPlayer(turn)
-        game = game.move(i,j)    
+        game = game.move(action)    
         if is_game_finished(game):
             game.end_game()
         #arr=gen_batch(game)
