@@ -307,7 +307,7 @@ def human_v_human(game: GameState, screen,rede: Neura):    # main method that ru
             if is_game_finished(game):
                 game.end_game()
             arr=gen_batch(game)
-            np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
+            #np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
             step+=1
         # to display the winner
         if game.end != 0:

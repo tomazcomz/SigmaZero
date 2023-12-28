@@ -3,8 +3,10 @@ from tensorflow import keras
 from keras import layers
 import numpy as np
 from keras.models import Model
-import os
+import os, random
 import names
+from go.inputconverter import *
+from shutil import copy
 
 """ 
 
@@ -64,12 +66,13 @@ class Neura:
         tanh=layers.Activation(activation='tanh',name='valout')(fcs)
         return tanh
     
-    def loss(val,zed,pist,pol,state):
+    def loss(val,zed,pist,pol):
+        pist=np.array(pist)
+        pol=np.transpose(np.array(pol))
         # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
-
-
         # medium=(z-v)^2 -pi^T(dot)log(p)+c||O||^2                  O=teta   c=0.0001
-        return
+        # l2 regularization deve ser feita nas camadas?
+        return (zed-val)**2-np.dot(pist,np.log(pol))
     
     def build(self,n_res,nf):
         conv=self.convblock(self.inpt,nf)
@@ -89,21 +92,10 @@ class Neura:
     def compilar(self):
         self.compile(optimizer=self.optmizador,loss=self.loss())
 
-
-
-#def create_train_set(ds_location):
-
-def train(rede: Neura,ds_location,load=True):
-    x,y=create_train_set(ds_location)
-    rede.compilar()
-    if (load):
-        rede.load_weights(f'pesos/{rede.name}.h5')
-    history=rede.fit(x,y,batch_size=8)   
-
-
-
-
-
+    def copy_weights(self,bestname):
+        src=f'pesos/{bestname}.h5'
+        dest=f'pesos/{self.name}.h5'
+        copy(src, dest)
 
 
 

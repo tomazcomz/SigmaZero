@@ -30,22 +30,18 @@ def convert(gamestate,prev):
                     frame[i][j][16]=gamestate.turn
     return frame
 
-# Print disto primeiro para ver se i está correto
-def get_previous(gamestate,i,list):
-    #print(gamestate.parent)
+def get_previous(gamestate,i,list,ti):
     if i==0:
+        # transformar gamestate.board,ti
         list.append(gamestate.board)
         return list
     if (gamestate.parent==None):
-        # print(i)
         blank(gamestate,list,i)
         return np.zeros(shape=gamestate.board.shape)
-    #print(gamestate.parent.board)
     i-=1
-    #print(list," pre")
-    get_previous(gamestate.parent,i,list)
+    get_previous(gamestate.parent,i,list,ti)
+    # transformar gamestate.board,ti
     list.append(gamestate.board)
-    #print(list," post")
     return list
 
 def blank(gamestate,list,i):
