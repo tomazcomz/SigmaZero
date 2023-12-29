@@ -42,7 +42,8 @@
 
     - agent_v_agent attaxx
     - avaliar.makegame
-    - loss and regularization
+    - loss
+    - guardar MCTS policy para treino
 
 
 # A testar:

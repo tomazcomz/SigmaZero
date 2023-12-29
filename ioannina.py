@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers
+from keras import layers,regularizers
 import numpy as np
 from keras.models import Model
 import os, random
@@ -52,7 +52,7 @@ class Neura:
         b=layers.BatchNormalization(name='bnpol')(c)
         rnl=layers.Activation(activation='softplus',name='rnlpol')(b)
         flt=layers.Flatten(name='polflat')(rnl)
-        fc=layers.Dense(units=self.action_space,name='polout')(flt)       #output of 362 flatten?
+        fc=layers.Dense(units=self.action_space,name='polout',kernel_regularizer=regularizers.L2(0.0001))(flt)  
         return fc
 
     def valhead(self,input,nf):
@@ -60,19 +60,18 @@ class Neura:
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         flt=layers.Flatten()(rnl)
-        fcl=layers.Dense(nf)(flt)
+        fcl=layers.Dense(nf,kernel_regularizer=regularizers.L2(0.0001))(flt)
         rnl2=layers.Activation(activation='softplus')(fcl)
-        fcs=layers.Dense(1)(rnl2)
+        fcs=layers.Dense(1,kernel_regularizer=regularizers.L2(0.0001))(rnl2)
         tanh=layers.Activation(activation='tanh',name='valout')(fcs)
         return tanh
     
-    def loss(val,zed,pist,pol):
-        pist=np.array(pist)
-        pol=np.transpose(np.array(pol))
+    def loss(pi,pol,zed,val):
+        pol=np.array(pol)
+        pit=np.transpose(np.array(pi))
         # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
-        # medium=(z-v)^2 -pi^T(dot)log(p)+c||O||^2                  O=teta   c=0.0001
-        # l2 regularization deve ser feita nas camadas?
-        return (zed-val)**2-np.dot(pist,np.log(pol))
+        # medium=(z-v)^2 -pi^T(dot)log(p)
+        return (zed-val)**2-np.dot(pit,np.log(pol))
     
     def build(self,n_res,nf):
         conv=self.convblock(self.inpt,nf)
