@@ -128,7 +128,7 @@ def drawResult(game, screen):
         screen.blit(text, text_rect)
 
     #return the coordinates of the mouse in the game window
-def mousePos(game):
+def mousePos(game: GameState):
         click = pygame.mouse.get_pos()   
         n = len(game.board)
         i = int(click[0]*n/800)
@@ -137,7 +137,7 @@ def mousePos(game):
         return coord
 
     #shows the selected cell on screen
-def showSelected(game, screen, coord, player_id):
+def showSelected(game: GameState, screen, coord, player_id):
         n = len(game.board)
         i=coord[0]
         j=coord[1]
@@ -196,22 +196,22 @@ def executeMov(game, initialCell, targetCell, selectedType, player_id):   # used
                 newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
         newGame = GameState(newBoard)
         return newGame
-    
+
 def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GUI
-        newBoard = cp.deepcopy(game.board)
-        moves = get_moves(game,initialCell)
-        move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
-        move_type = moves[move][1]
-        if move_type == 1:
-            newBoard[targetCell[1]][targetCell[0]] = player_id
-            newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
-        elif move_type == 2:
-            newBoard[targetCell[1]][targetCell[0]] = player_id
-            newBoard[initialCell[1]][initialCell[0]] = 0
-            newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
-        newGame = GameState(newBoard)
-        return newGame
-        
+    newBoard = cp.deepcopy(game.board)
+    moves = get_moves(game,initialCell)
+    move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
+    move_type = moves[move][1]
+    if move_type == 1:
+        newBoard[targetCell[1]][targetCell[0]] = player_id
+        newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+    elif move_type == 2:
+        newBoard[targetCell[1]][targetCell[0]] = player_id
+        newBoard[initialCell[1]][initialCell[0]] = 0
+        newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+    newGame = GameState(newBoard)
+    return newGame
+    
 
 def switchPlayer(player_id):
         return 3-player_id
