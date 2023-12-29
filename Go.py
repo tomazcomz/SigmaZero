@@ -311,8 +311,8 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             drawPieces(game, screen)
             if is_game_finished(game):
                 game.end_game()
-            # arr=gen_batch(game)
-            #np.savetxt(f'go/convertiontest/{m}_{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
+            arr=gen_batch(game)
+            #np.savetxt(f'go/convertiontest/{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
             step+=1
         # to display the winner
         if game.end != 0:

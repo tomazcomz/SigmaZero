@@ -25,10 +25,12 @@ class Neura:
         if (game.type==0):
             self.nf=256                 # tem que ser menos
             self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
+            self.passes=0
         else:
             self.nf=256
+            self.passes=1
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
-        self.action_space=len(game.board)*len(game.board[0])+1
+        self.action_space=len(game.board)*len(game.board[0])+self.passes
 
     # Se calhar devíamos adaptar o kernel size, devido as dimensões do tabuleiro
     def convblock(self,input,nf):

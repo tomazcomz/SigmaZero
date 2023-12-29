@@ -1,37 +1,37 @@
 import numpy as np
-
+import random
 '''
 Para t<7 todos para trás, são em branco
 '''
 
 def gen_batch(gamestate):
-    prev=get_previous(gamestate,7,[])
+    ti=random.choice(range(8))
+    prev=get_previous(gamestate,8,[],ti)
+    print(len(prev))
     frame=convert(gamestate,prev)
     return frame
 
 def convert(gamestate,prev):
     frame=np.zeros(shape=(len(gamestate.board),len(gamestate.board[0]),17))
     for s in range(8):
-        if s==0:
-            board=gamestate.board
-            #print(board)
-        else:
-            #print(s)
-            #print(i for i in prev)
-            board=prev[7-s]
-            #print(board)
+        board=prev[7-s]
         for i in range(len(frame)):
             for j in range(len(frame[0])):
-                if (board[i][j]==-1):
-                    frame[i][j][i*2]=1
-                if (board[i][j]==1):
-                    frame[i][j][i*2+1]=1
+                if (board[i][j]==gamestate.turn):
+                    frame[i][j][s*2]=1
+                if (board[i][j]==-gamestate.turn):
+                    frame[i][j][s*2+1]=1
                 if (s==7):
+                    #print(board)
                     frame[i][j][16]=gamestate.turn
+    for a in frame:
+        for b in a:
+            print(b)
+        print('/-/')
     return frame
 
 def get_previous(gamestate,i,list,ti):
-    if i==0:
+    if i==1:
         list.append(transform(gamestate.board, ti))
         return list
     if (gamestate.parent==None):
@@ -43,10 +43,12 @@ def get_previous(gamestate,i,list,ti):
     return list
 
 def transform(board, ti):
-    if ti>3:
+    """ if ti>3:
         board = np.flipud(board)
         ti -= 4
-    return np.rot90(board, ti)
+    return np.rot90(board, ti) """
+    return board
+
 
 def blank(gamestate,list,i):
     for j in range(i):
