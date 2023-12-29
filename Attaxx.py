@@ -51,7 +51,7 @@ def final_move(game,board,play,player):     #### função que verifica se o esta
         if np.count_nonzero(gamenp==(player))==0:
             return (True,3-player)
         if np.count_nonzero(gamenp==0) != 0:
-                    return (False,-1)
+            return (False,-1)
         if np.count_nonzero(gamenp==0) == 0:  
             count_p=np.count_nonzero(gamenp==player)
             count_o=np.count_nonzero(gamenp==(3-player))
@@ -181,7 +181,7 @@ def skip(game,player):
             return True
         return False
     
-def executeMov(game, initialCell, targetCell, selectedType, player_id):
+def executeMov(game, initialCell, targetCell, selectedType, player_id):   # used when playing with GUI
         newBoard = cp.deepcopy(game.board)
         if targetCell in selectedType:
             movType = selectedType[targetCell]
@@ -196,6 +196,22 @@ def executeMov(game, initialCell, targetCell, selectedType, player_id):
                 newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
         newGame = GameState(newBoard)
         return newGame
+    
+def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GUI
+        newBoard = cp.deepcopy(game.board)
+        moves = get_moves(game,initialCell)
+        move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
+        move_type = moves[move][1]
+        if move_type == 1:
+            newBoard[targetCell[1]][targetCell[0]] = player_id
+            newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+        elif move_type == 2:
+            newBoard[targetCell[1]][targetCell[0]] = player_id
+            newBoard[initialCell[1]][initialCell[0]] = 0
+            newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+        newGame = GameState(newBoard)
+        return newGame
+        
 
 def switchPlayer(player_id):
         return 3-player_id
@@ -247,12 +263,12 @@ def jogo_Humano_Humano(game, screen):
                 pygame.display.update()
             pygame.display.update()
 
-def objective_test(game,player): #atualizar count
+def objective_test(game,player): #atualizar count   # com GUI
     gamenp=np.array(game.board)
     if np.count_nonzero(gamenp==(3-player))==0:
         return player
     if np.count_nonzero(gamenp==0) != 0:
-                return -1
+        return -1
     if np.count_nonzero(gamenp==0) == 0:  
         count_p=np.count_nonzero(gamenp==player)
         count_o=np.count_nonzero(gamenp==(3-player))
@@ -261,6 +277,21 @@ def objective_test(game,player): #atualizar count
         if count_o > count_p:
             return (3-player)
     return 0 
+
+def _objective_test(game,player):   # sdevolve também as pontuações
+    gamenp=np.array(game.board)
+    if np.count_nonzero(gamenp==(3-player))==0:
+        return player,len(gamenp),0
+    if np.count_nonzero(gamenp==0) != 0:
+        return -1,-1,-1
+    if np.count_nonzero(gamenp==0) == 0:  
+        count_p=np.count_nonzero(gamenp==player)
+        count_o=np.count_nonzero(gamenp==(3-player))
+        if count_p > count_o:
+            return player, count_p, count_o
+        if count_o > count_p:
+            return (3-player), count_o, count_p
+    return 0, count_p, count_o
 
 
 def setScreen():
@@ -287,16 +318,14 @@ def chooseBoard():
         table = "attaxx/tab"+tableNum+".txt"
         return table
     
-def main():
-        table = chooseBoard()
-        '''pygame.init()
-        screen = setScreen()'''
-        game = readBoard(table)
-        '''drawBoard(game, screen)
-        jogo_Humano_Humano(game, screen)'''
-        return game
+if __name__ == "__main__":
+    start_time = time.time()
+    table = chooseBoard()
+    '''pygame.init()
+    screen = setScreen()'''
+    game = readBoard(table)
+    '''drawBoard(game, screen)
+    jogo_Humano_Humano(game, screen)'''
+    print("--- %.5f seconds ---" % (time.time() - start_time))
 
-start_time = time.time()
-main()
-print("--- %.5f seconds ---" % (time.time() - start_time))
 
