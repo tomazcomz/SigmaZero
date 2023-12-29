@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow import keras
-from keras import layers,regularizers
+from keras import layers,regularizers,optimizers
 import numpy as np
 from keras.models import Model
 import os, random
@@ -15,11 +15,10 @@ Train:
 
 """
 class Neura:
-    def __init__(self,game,n_resblocks=19,optmizador=None):        # loss function and learning rate?
+    def __init__(self,game,n_resblocks=19):        # loss function and learning rate?
         self.input(game)
         self.build(n_resblocks,self.nf)
         self.name=names.get_last_name()
-        self.optmizador=optmizador
 
     def input(self,game):
         if (game.type==0):
@@ -88,8 +87,8 @@ class Neura:
         self.net.summary()
         return
     
-    def compilar(self):
-        self.net.compile(optimizer=self.optmizador,loss=self.loss())
+    def compilar(self,lr=0.01):
+        self.net.compile(optimizer=optimizers.SGD(learning_rate=lr,momentum=0.9),loss=self.loss())
 
     def copy_weights(self,bestname):
         src=f'pesos/best/{bestname}.h5'

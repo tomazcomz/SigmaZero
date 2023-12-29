@@ -39,9 +39,7 @@
 
 # É Preciso Fazer:
 
-
     - agent_v_agent attaxx
-    - avaliar.makegame
     - loss
     - guardar MCTS policy para treino
 

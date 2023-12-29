@@ -6,26 +6,28 @@ import time
 from Go import agent_v_agent
 
 ARGS = {
-    'cpuct': 10**-4,
+    'cpuct': 1.5,
     'num_searches': 1600
 }
 
-def sptrainprocd(board,alphaname):
+def sptrainprocd(game,policy,alphaname):
     tag=f'{alphaname}_{time.time()}'
-    file=f'datasets/boards/{tag}.txt'
-    np.savetxt(file,board)
+    pfile=f'{game.name}/{len(game.board)}/datasets/policies/{tag}.txt'
+    file=f'{game.name}/{len(game.board)}/datasets/boards/{tag}.txt'
+    np.savetxt(file,game.board)
+    np.savetxt(pfile,policy)
     return tag
 
-def labelmaking(list,winner):
+def labelmaking(game,list,winner):
     for tag in list:
-        file=f'datasets/labels/{tag}.txt'
+        file=f'{game.name}/{len(game.board)}/datasets/labels/{tag}.txt'
         with open(file, 'w') as f:
             f.write(winner)
 
-def selfplay(games,size):
+def selfplay(games):
     game=makegame(games)
-    tind=setind(game,size)
-    w=os.listdir(f'modelos/{games}/{size}/best')
+    tind=setind(game,len(game.board))
+    w=os.listdir(f'modelos/{games}/{len(game.board)}/best')
     for f in w:
         sweights=f
         break

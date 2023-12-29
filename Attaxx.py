@@ -10,6 +10,7 @@ import time
 
 class GameState:
     def __init__(self, board):
+        self.name='attaxx'
         self.type=0
         self.board = board
         self.end=-2

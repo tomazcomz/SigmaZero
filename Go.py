@@ -14,6 +14,7 @@ KOMI = 5.5   # predefined value to be added to white's score
 
 class GameState:
     def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None,parent=None):
+        self.name='go'
         self.n = len(board)             # number of rows and columns
         self.board = board
         self.type=1

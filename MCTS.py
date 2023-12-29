@@ -128,5 +128,3 @@ class MCTS:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.root=self.get_child(self.root, played) # new root node is the child corresponding to the played action
             return played
-    
-
