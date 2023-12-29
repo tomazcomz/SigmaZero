@@ -40,7 +40,6 @@
 # É Preciso Fazer:
 
 
-    - switch player dentro do Attaxx
     - agent_v_agent attaxx
     - avaliar.makegame
     - loss and regularization
@@ -48,6 +47,5 @@
 
 # A testar:
 
-    - predict da rede
     - Criação de ficheiros e labels   ->  optimizar.Gen Dataset 
     - Guardar melhor modelo e etcs

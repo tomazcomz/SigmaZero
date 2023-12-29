@@ -99,7 +99,7 @@ class MCTS:
 
             # expand and evaluate
             if not terminal:
-                p, v = self.model.predict(node.game_state)
+                p, v = self.model.predict(np.array([node.game_state.board]))
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
                 node.expand(p) # adding childs with policy from the NN to list children

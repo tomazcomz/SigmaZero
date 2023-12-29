@@ -24,10 +24,6 @@ def convert(gamestate,prev):
                 if (s==7):
                     #print(board)
                     frame[i][j][16]=gamestate.turn
-    for a in frame:
-        for b in a:
-            print(b)
-        print('/-/')
     return frame
 
 def get_previous(gamestate,i,list,ti):
@@ -36,7 +32,7 @@ def get_previous(gamestate,i,list,ti):
         return list
     if (gamestate.parent==None):
         blank(gamestate,list,i)
-        return np.zeros(shape=gamestate.board.shape)
+        return list
     i-=1
     get_previous(gamestate.parent,i,list,ti)
     list.append(transform(gamestate.board, ti))

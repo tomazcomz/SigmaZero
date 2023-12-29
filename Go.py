@@ -16,6 +16,7 @@ class GameState:
     def __init__(self,board,turn=1,play_idx=0,pass_count=0,previous_boards={1:None, -1:None},empty_positions=None,parent=None):
         self.n = len(board)             # number of rows and columns
         self.board = board
+        self.type=1
         self.turn = turn                # who's playing next
         self.play_idx = play_idx        # how many overall plays occurred before this state
         self.pass_count = pass_count    # counts the current streak of 'pass' plays
@@ -371,7 +372,12 @@ if __name__ == "__main__":
     screen = setScreen()
     drawBoard(initial_state, screen)
     human_v_human(initial_state, screen)
-        
+
+def main():
+    n = ask_board_size()
+    initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
+    initial_state = GameState(initial_board)
+    return initial_state        
 
 # black plays first
 # black -> 1 -> player 1
