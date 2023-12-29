@@ -44,6 +44,7 @@ def start_server_go(host='localhost', port=12345):
     
     while True:
         try:
+            time.sleep(1)
             data = agents[current_agent].recv(1024).decode()
             if not data:
                 break
@@ -93,7 +94,6 @@ def start_server_go(host='localhost', port=12345):
                 
             # Switch to the other agent
             current_agent = 1-current_agent
-            time.sleep(1)
 
         except Exception as e:
             print("Error:", e)
