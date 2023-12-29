@@ -76,7 +76,7 @@ class MCTS:
         self.evaluate=eva
         self.ti=tind            # ver * em ideias.md
         self.root=None # for updating root node 
-        self.pi=np.zeros(self.game_state.n**2+1)
+        self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
 
     def get_child(self, node, action): # find child node associated with action
         for child in node.children:

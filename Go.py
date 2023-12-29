@@ -352,8 +352,9 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
 #             selfplay.labelmaking(labellist,game.winner)
 #         return game.winner
             
-def ask_board_size():
-    inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
+def ask_board_size(inp=None):
+    if inp==None:
+        inp = int(input('Board 1 - 7x7\nBoard 2 - 9x9\nChoose a board (1 or 2): '))
     if inp == 1:
         n=7
     elif inp == 2:

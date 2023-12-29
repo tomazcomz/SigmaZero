@@ -312,9 +312,10 @@ def readBoard(ficheiro):
         return GameState(board)
 
     #pede ao user para escolher o tabuleiro que pretende usar
-def chooseBoard():
+def chooseBoard(tableNum=None):
         #todos os ficheiros com tabuleiros devem ter nome do tipo "tabX.txt"
-        tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n1) 4x4\n3) 6x6\nTabuleiro: ")
+        if tableNum==None:
+            tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n1) 4x4\n3) 6x6\nTabuleiro: ")
         table = "attaxx/tab"+tableNum+".txt"
         return table
     
