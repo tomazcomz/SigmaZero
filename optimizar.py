@@ -2,8 +2,10 @@ from ioannina import *
 
 def create_train_set(ds_location,game,bs=2048):
     x,y=[],[]
+    # x <- board
+    # y <- policy, label
     for i in range(bs):
-        boardfile=random.choice(os.listdir('go/datasets/boards'))
+        boardfile=random.choice(os.listdir(f'{game.name}/{len(game.board)}/datasets/boards'))
         # open file
         # if game==Go board=gen_batch()
         # labelname=boardfile em labels
