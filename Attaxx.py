@@ -12,7 +12,7 @@ class GameState:
     def __init__(self, board):
         self.type=0
         self.board = board
-        self.end=-1
+        self.end=-2
         self.children = []
         self.parent = None
         self.parentPlay = None # (play, movtype)
@@ -46,19 +46,19 @@ def final_move(game,board,play,player):     #### função que verifica se o esta
         #print(player,'final')
         gamenp=np.array(board)
         #print(gamenp,'nparray')
-        if np.count_nonzero(gamenp==(3-player))==0:
+        if np.count_nonzero(gamenp==(-player))==0:
             return (True,player)
         if np.count_nonzero(gamenp==(player))==0:
-            return (True,3-player)
+            return (True,-player)
         if np.count_nonzero(gamenp==0) != 0:
-            return (False,-1)
+            return (False,-2)
         if np.count_nonzero(gamenp==0) == 0:  
             count_p=np.count_nonzero(gamenp==player)
-            count_o=np.count_nonzero(gamenp==(3-player))
+            count_o=np.count_nonzero(gamenp==(-player))
             if count_p > count_o:
                 return (True,player)
             if count_o > count_p:
-                return (True,3-player)
+                return (True,-player)
         return (True,0)
     
     #i=y and j=x : tuples are (y,x)
@@ -105,7 +105,7 @@ def drawPieces(game, screen):
                 if game.board[j][i] == 1:
                     pygame.draw.circle(screen, (0,0,255), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
                 #desenha peças do jogador 2
-                if game.board[j][i] == 2:
+                if game.board[j][i] == -1:
                     pygame.draw.circle(screen, (0,150,0), ((800*i/n)+800/(2*n), (800*j/n)+800/(2*n)), 800/(3*n))
                 #desenha quadrados onde não se pode jogar
                 if game.board[j][i] == 8:
@@ -113,7 +113,7 @@ def drawPieces(game, screen):
 
     #mostrar o resultado do jogo graficamente
 def drawResult(game, screen):
-        if game.end == -1:
+        if game.end == -2:
             return None
         font = pygame.font.Font('freesansbold.ttf', 32)
         pygame.draw.rect(screen, (0,0,0), (120, 240, 560, 320))
@@ -122,7 +122,7 @@ def drawResult(game, screen):
             text = font.render("Empate!", True, (0,0,0))
         elif game.end == 1:
             text = font.render("Jogador 1 vence!", True, (0,0,255))
-        elif game.end == 2:
+        elif game.end == -1:
             text = font.render("Jogador 2 vence!", True, (0,150,0))
         text_rect = text.get_rect(center=(400, 400))
         screen.blit(text, text_rect)
@@ -147,7 +147,7 @@ def showSelected(game: GameState, screen, coord, player_id):
             #desenha as cell possiveis de se jogar do player id
             if player_id == 1:
                 selectedCellRGB  = (173,216,230) #azul claro
-            elif player_id == 2:
+            elif player_id == -1:
                 selectedCellRGB = (144,238,144) #verde claro
             pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
             moves=get_moves(game,coord)
@@ -214,13 +214,13 @@ def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GU
     
 
 def switchPlayer(player_id):
-        return 3-player_id
+        return -player_id
 
     #game mode Human vs Human
 def jogo_Humano_Humano(game, screen):
         player_id = 1
         clickState = False
-        while game.end==-1:
+        while game.end==-2:
             drawPieces(game, screen)
             events = pygame.event.get()
             for event in events:
@@ -253,7 +253,7 @@ def jogo_Humano_Humano(game, screen):
             game.end = objective_test(game,player_id)
 
             #to display the winner
-            while game.end != -1:
+            while game.end != -2:
                 drawResult(game,screen)
                 events = pygame.event.get()
                 for event in events:
@@ -265,32 +265,32 @@ def jogo_Humano_Humano(game, screen):
 
 def objective_test(game,player): #atualizar count   # com GUI
     gamenp=np.array(game.board)
-    if np.count_nonzero(gamenp==(3-player))==0:
+    if np.count_nonzero(gamenp==(-player))==0:
         return player
     if np.count_nonzero(gamenp==0) != 0:
-        return -1
+        return -2
     if np.count_nonzero(gamenp==0) == 0:  
         count_p=np.count_nonzero(gamenp==player)
-        count_o=np.count_nonzero(gamenp==(3-player))
+        count_o=np.count_nonzero(gamenp==(-player))
         if count_p > count_o:
             return player
         if count_o > count_p:
-            return (3-player)
+            return (-player)
     return 0 
 
 def _objective_test(game,player):   # sdevolve também as pontuações
     gamenp=np.array(game.board)
-    if np.count_nonzero(gamenp==(3-player))==0:
+    if np.count_nonzero(gamenp==(-player))==0:
         return player,len(gamenp),0
     if np.count_nonzero(gamenp==0) != 0:
-        return -1,-1,-1
+        return -2,-2,-2
     if np.count_nonzero(gamenp==0) == 0:  
         count_p=np.count_nonzero(gamenp==player)
-        count_o=np.count_nonzero(gamenp==(3-player))
+        count_o=np.count_nonzero(gamenp==(-player))
         if count_p > count_o:
             return player, count_p, count_o
         if count_o > count_p:
-            return (3-player), count_o, count_p
+            return (-player), count_o, count_p
     return 0, count_p, count_o
 
 
@@ -328,4 +328,10 @@ if __name__ == "__main__":
     jogo_Humano_Humano(game, screen)'''
     print("--- %.5f seconds ---" % (time.time() - start_time))
 
-
+def main():
+    start_time = time.time()
+    table = chooseBoard()
+    '''pygame.init()
+    screen = setScreen()'''
+    game = readBoard(table)
+    return game

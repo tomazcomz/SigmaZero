@@ -52,7 +52,7 @@ class Neura:
         b=layers.BatchNormalization(name='bnpol')(c)
         rnl=layers.Activation(activation='softplus',name='rnlpol')(b)
         flt=layers.Flatten(name='polflat')(rnl)
-        fc=layers.Dense(units=self.action_space,name='')(flt)       #output of 362 flatten?
+        fc=layers.Dense(units=self.action_space,name='polout')(flt)       #output of 362 flatten?
         return fc
 
     def valhead(self,input,nf):
