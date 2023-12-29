@@ -6,7 +6,7 @@ import time
 from Go import agent_v_agent
 
 ARGS = {
-    'cput': 10**-4,
+    'cpuct': 10**-4,
     'num_searches': 1600
 }
 

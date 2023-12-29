@@ -45,13 +45,16 @@ class Node:
         selected = max(self.children, key=lambda child: self.ucb(child))
         return selected.select()
     
+    def cpuct(self, visit_count): # defining cpuct according to paper
+        return math.log((visit_count+19652+1)/19652)+self.args['cpuct']
+    
     def ucb(self, child): # uses variant of the PUCT algorithm
         # mean_action_value Q=W/N
         if child.visit_count==0:
             mean_action_value=0 
         else:
             mean_action_value=child.total_action_value/child.visit_count
-        return mean_action_value+self.args['cput']*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
+        return mean_action_value+self.cpuct(self.visit_count)*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
 
     def expand(self, p):
         for _ in range(self.untried_actions.len()):
@@ -82,8 +85,7 @@ class MCTS:
     
     def play(self):
         if self.root is None:
-            p=0.75*self.root.prior_prob+0.25*0.03 # adding Dirichlet noise to root's prior 
-            self.root=Node(self.game_state, self.args, prior_prob=p)
+            self.root=Node(self.game_state, self.args)
 
         for _ in range(self.args['num_searches']):
             node=self.root
@@ -98,6 +100,8 @@ class MCTS:
             # expand and evaluate
             if not terminal:
                 p, v = self.model.predict(node.game_state)
+                if self.game_state.play_idx-1>self.ti or self.evaluate:
+                    p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
                 node.expand(p) # adding childs with policy from the NN to list children
 
             # backpropagate
@@ -106,8 +110,7 @@ class MCTS:
         if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
-            temp=0
-
+            temp=self.args['cput']
         action_prob=np.zeros(self.game_state.n**2+1)
         for child in self.root.children:
             action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)

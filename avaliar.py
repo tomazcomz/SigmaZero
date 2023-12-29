@@ -4,7 +4,7 @@ import Go
 import Attaxx
 
 ARGS = {
-    'cput': 10**-4,
+    'cput': 1.5,
     'num_searches': 1600
 }
 
