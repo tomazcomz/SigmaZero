@@ -1,15 +1,16 @@
 import numpy as np
 import socket
 import time
-from Go import GameState as Go, check_possible_moves, is_game_finished
-
+from Go import GameState as Go, check_possible_moves, is_game_finished as is_game_finished_go, setScreen, drawBoard, drawPieces
+from Attaxx import GameState as Attaxx, _executeMov as execute_move, _objective_test as is_game_finished_attaxx, get_moves
+import pygame
 
 games = ["A4x4", "A5x5", "A6x6", "G7x7", "G9x9"]
-game = games[3]
+# game = games[0]     # ATTAXX
+game = games[3]     # GO
 
-
-def is_valid_move_go(game,i,j):    # implementing the logic to check if the move is valid
-    return (i,j) in check_possible_moves(game)
+def is_move_valid_go(game,move):    # implementing the logic to check if the move is valid
+    return move in check_possible_moves(game)
 
 def start_server_go(host='localhost', port=12345):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,6 +31,11 @@ def start_server_go(host='localhost', port=12345):
     n = int(game[1])
     initial_board = np.zeros((n, n),dtype=int)     # initializing an empty board of size (n x n)
     GameState = Go(initial_board)    # initializing the game
+    
+    pygame.init()
+    screen = setScreen()    # setting the screen for graphical display
+    drawBoard(GameState, screen)
+    pygame.display.update()
 
     agents = [agent1, agent2]
     current_agent = 0
@@ -48,29 +54,41 @@ def start_server_go(host='localhost', port=12345):
                 GameState.pass_turn()
             else:
                 # processing the move (example: "MOVE X,Y")
-                i = str(data[5])
-                j = str(data[7])
-                print(current_agent, " -> ",data)
+                i = int(data[5])
+                j = int(data[7])
+                if current_agent == 0:
+                    print("Agent 1 -> ",data)
+                else:
+                    print("Agent 2 -> ",data)
                 jog = jog+1
                 
                 # checking if the move is valid and, if so, executing it
-                if is_valid_move_go(GameState,i,j):
+                if is_move_valid_go(GameState,(i,j)):
                     agents[current_agent].sendall(b'VALID')
                     agents[1-current_agent].sendall(data.encode())
-                    GameState = GameState.move(i,j)
+                    GameState = GameState.move((i,j))
+                    time.sleep(0.1)
+                    drawBoard(GameState, screen)
+                    drawPieces(GameState, screen)
+                    event = pygame.event.poll()
                 else:
                     agents[current_agent].sendall(b'INVALID')
                     continue
                 
+            pygame.display.update()
+                
             # checking if the game is over
-            if is_game_finished(GameState):
+            if is_game_finished_go(GameState):
                 GameState.end_game()
                 winner = GameState.winner
+                if winner == -1:
+                    winner = 2
                 p1_score = GameState.scores[1]
                 p2_score = GameState.scores[-1]
                 data = "END " + str(winner) + " " + str(p1_score) + " " + str(p2_score)
                 agents[current_agent].sendall(data.encode())
                 agents[1-current_agent].sendall(data.encode())
+                pygame.quit()
                 break
                 
             # Switch to the other agent
@@ -86,14 +104,7 @@ def start_server_go(host='localhost', port=12345):
     agent1.close()
     agent2.close()
     server_socket.close()
-
-
-def start_server_attaxx():
-    pass
-
-
+    
 if __name__ == "__main__":
     if game[0]=='G':
         start_server_go()
-    elif game[0]=='A':
-        start_server_attaxx()
