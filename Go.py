@@ -135,7 +135,7 @@ def check_for_captures(board, turn, empty_positions:set = set()):   # method tha
                     empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
     return board, empty_positions   # returning the new board and the new empty positions list
 
-def is_move_valid(state:GameState,move):
+def is_move_valid(state: GameState,move):
     i,j=move
     return (i,j) in check_possible_moves(state)
     
