@@ -76,6 +76,7 @@ class MCTS:
         self.evaluate=eva
         self.ti=tind            # ver * em ideias.md
         self.root=None # for updating root node 
+        self.pi=np.zeros(self.game_state.n**2+1)
 
     def get_child(self, node, action): # find child node associated with action
         for child in node.children:
@@ -111,10 +112,16 @@ class MCTS:
             temp=1
         else:
             temp=self.args['cput']
-        action_prob=np.zeros(self.game_state.n**2+1)
+
+        """ action_prob=np.zeros(self.game_state.n**2+1)
         for child in self.root.children:
-            action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
-        max_prob_index = np.argmax(action_prob)
+            action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp) """
+        
+        for child in self.root.children:
+            self.pi[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
+
+        #max_prob_index = np.argmax(action_prob)
+        max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
             return (-1, -1)     # definir isto como "pass"
         else:

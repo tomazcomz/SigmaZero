@@ -8,7 +8,25 @@ ARGS = {
     'num_searches': 1600
 }
 
-#def makegame(games: str):
+class Jogo:
+    def __init__(self, tipo, estado):
+        self.type=tipo
+        self.state=estado
+
+def makegame(games: str): # creates gamestate
+    if games=='Attaxx':
+        tipo=0
+        table = Attaxx.chooseBoard()       # ver, só fui buscar inicializaçao inicial do jogo
+        estado = Attaxx.readBoard(table) 
+    else:
+        tipo=1
+        n = Go.ask_board_size()
+        initial_board = np.zeros((n, n),dtype=int)  
+        estado = Go.GameState(initial_board) # sendo que é estado inicial
+
+    gamestate=Jogo(tipo, estado)
+
+    return gamestate
 
 def setind(game,size):
     tind=0
@@ -27,7 +45,7 @@ def setind(game,size):
     return tind
 
 def avaliar(games,size):
-    #game=makegame(games)
+    game=makegame(games)
     icount=0
     scount=0
     for i in range(400):
