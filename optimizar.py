@@ -6,11 +6,12 @@ def create_train_set(ds_location,game,bs=2048):
     # y <- policy, label
     for i in range(bs):
         boardfile=random.choice(os.listdir(f'{game.name}/{len(game.board)}/datasets/boards'))
-        # open file
+        bf=open(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile}', 'r')
+        pf=open(f'{game.name}/{len(game.board)}/datasets/policies/{boardfile}', 'r')
+        lf=open(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}', 'r')
+        x.append(bf)
+        y.append(pf, lf)
         # if game==Go board=gen_batch()
-        # labelname=boardfile em labels
-        # open label
-        # append
     return x,y
 
 def train(rede: Neura,ds_location,load=True):
