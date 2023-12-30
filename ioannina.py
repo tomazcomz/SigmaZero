@@ -15,10 +15,15 @@ Train:
 
 """
 class Neura:
-    def __init__(self,game,n_resblocks=19):        # loss function and learning rate?
+    def __init__(self,game,name=None,n_resblocks=19):        # loss function and learning rate?
         self.input(game)
+        self.game=game
         self.build(n_resblocks,self.nf)
-        self.name=names.get_last_name()
+        if name==None:
+            self.name=names.get_last_name()+game.name+str(len(game.board))
+        else:
+            self.name=name
+        self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
 
     def input(self,game):
         if (game.type==0):
@@ -65,12 +70,12 @@ class Neura:
         tanh=layers.Activation(activation='tanh',name='valout')(fcs)
         return tanh
     
-    def loss(pi,pol,zed,val):
-        pol=np.array(pol)
-        pit=np.transpose(np.array(pi))
+    def loss(pival,polzed):
+        pol=np.array(polzed[0])
+        pit=np.transpose(np.array(pival[0]))
         # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
         # medium=(z-v)^2 -pi^T(dot)log(p)
-        return (zed-val)**2-np.dot(pit,np.log(pol))
+        return (polzed[1]-pival[1])**2-np.dot(pit,np.log(pol))
     
     def build(self,n_res,nf):
         conv=self.convblock(self.inpt,nf)
@@ -91,14 +96,16 @@ class Neura:
         self.net.compile(optimizer=optimizers.SGD(learning_rate=lr,momentum=0.9),loss=self.loss())
 
     def copy_weights(self,bestname):
-        src=f'pesos/best/{bestname}.h5'
-        dest=f'pesos/{self.name}.h5'
+        src=f'modelos/{self.game.name}/{str(len(self.game.board))}/best/{bestname}.h5'
+        dest=f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5'
         copy(src, dest)
     
     def make_best(self):
-        self.net.save_weights(f'pesos/best/{self.name}.h5')
+        self.net.save_weights(f'modelos/best/{self.name}.h5')
 
 
+    def get_best_name(self):
+        return
 
 
 '''------------------------------------  CUDA-RELATED  --------------------------------------------'''
