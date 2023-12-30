@@ -1,10 +1,5 @@
 import math
 import numpy as np
-import Go
-""" import OldGo
-import Attaxx 
-from ioannina import Neura
- """
 
 """ 
 select, expand and evaluate, backup, play
