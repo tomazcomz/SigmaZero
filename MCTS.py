@@ -20,7 +20,7 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, game_state, args, untried_actions=None, parent=None, p_action=None, prior_prob=0):
+    def __init__(self, game_state, args, mcts,untried_actions=None, parent=None, p_action=None, prior_prob=0):
         self.game_state=game_state
         self.args=args
         self.parent=parent
@@ -31,7 +31,7 @@ class Node:
         self.visit_count=0 # N
         self.total_action_value=0 # W
         self.possible=self.game_state.n**2+self.game_state.type
-        self.map=self.map_act()
+        self.mcts=mcts
 
     def fully_expanded(self):
         return len(self.children)>0 # if no expandable moves and there are children
@@ -53,19 +53,10 @@ class Node:
             mean_action_value=child.total_action_value/child.visit_count
         return mean_action_value+self.cpuct(self.visit_count)*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
     
-    def map_act(self):
-        poss=self.possible-self.game_state.type
-        list=[self.possible]
-        a=0
-        for i in range(len(self.game_state.board)):
-            for j in range(len(self.game_state.board[0])):
-                list[a]=(j,i)
-                a+=1
-        list[a]=(-1,-1)    # adaptar para attaxx
 
     def expand(self, p):
         for _ in range(self.possible):
-            action=map[_]
+            action=self.mcts.get_act(_)
             if action in self.untried_actions:
                 next_state = self.game_state.move(action[0], action[1])
                 child = Node(next_state, parent=self, p_action=action, prior_prob=p[_])
@@ -86,6 +77,7 @@ class MCTS:
         self.ti=tind            # ver * em ideias.md
         self.root=None # for updating root node 
         self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
+        self.map=self.map_act(self.root)
 
     def get_child(self, node, action): # find child node associated with action
         for child in node.children:
@@ -93,9 +85,22 @@ class MCTS:
                 return child
         return None
     
+    def map_act(self,root):
+        poss=self.root.possible-self.game_state.type
+        list=[self.root.possible]
+        a=0
+        for i in range(len(self.game_state.board)):
+            for j in range(len(self.game_state.board[0])):
+                list[a]=(j,i)
+                a+=1
+        list[a]=(-1,-1)    # adaptar para attaxx
+
+    def get_act(self,_):
+        return  self.map[_]
+    
     def play(self):
         if self.root is None:
-            self.root=Node(self.game_state, self.args)
+            self.root=Node(self.game_state, self.args,self)
 
         for _ in range(self.args['num_searches']):
             node=self.root
@@ -125,7 +130,7 @@ class MCTS:
             temp=self.args['cput']
 
         for child in self.root.children:
-            self.pi[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
+            self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
 
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
