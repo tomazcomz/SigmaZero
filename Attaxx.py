@@ -9,15 +9,15 @@ import random as rd
 import time
 
 class GameState:
-    def __init__(self, board):
+    def __init__(self, board, player_id=1):
         self.name='attaxx'
-        self.player_id = 1
+        self.player_id = player_id
         self.type=0
         self.board = board
         self.end=-2
         self.children = []
         self.parent = None
-        self.parentPlay = None # (play, movtype)
+        self.parentPlay = None  # (play, movtype)
         self.parentCell = None
     
     def createChildren(self, player_id):
@@ -38,14 +38,14 @@ class GameState:
                             if newboard not in differentPlayBoards:
                                 differentPlayBoards.append(newboard)
                                 newboard = get_and_apply_adjacent(play, newboard, player_id)
-                                newState = GameState(newboard)
+                                newState = GameState(newboard,-player_id)
                                 newState.parentCell = (i,j)
                                 newState.parentPlay = (play, moves[mov][1])
                                 newState.parent = self
                                 self.children.append(newState)
                                 
     def switchPlayer(self):
-        return -self.player_id    
+        self.player_id = -self.player_id    
     
 
 def final_move(game,board,play,player):     #### função que verifica se o estado não tem children
@@ -193,7 +193,7 @@ def get_and_apply_adjacent(targetCell, newBoard, player_id):
                 newBoard[adjCell[1]][adjCell[0]] = player_id
         return newBoard
 
-def skip(game,player):
+def skip(game: GameState, player):
         game.createChildren(player)
         if len(game.children) == 0:
             return True
@@ -212,7 +212,7 @@ def executeMov(game, initialCell, targetCell, selectedType, player_id):   # used
                 newBoard[targetCell[1]][targetCell[0]] = player_id
                 newBoard[initialCell[1]][initialCell[0]] = 0
                 newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
-        newGame = GameState(newBoard)
+        newGame = GameState(newBoard, -player_id)
         return newGame
 
 def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GUI
@@ -227,7 +227,7 @@ def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GU
         newBoard[targetCell[1]][targetCell[0]] = player_id
         newBoard[initialCell[1]][initialCell[0]] = 0
         newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
-    newGame = GameState(newBoard)
+    newGame = GameState(newBoard, -player_id)
     return newGame
 
 
@@ -256,15 +256,14 @@ def jogo_Humano_Humano(game, screen):
                     #fazer o movimento da jogada
                     elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
                         targetCell = mousePos(game)
-                        prevBoard = cp.deepcopy(game.board)
                         game = executeMov(game, coord, targetCell, selected, player_id)
-                        if not (np.array_equal(prevBoard,game.board)):
-                            player_id = game.switchPlayer()
+                        player_id = game.player_id
                         clickState=False
                         drawBoard(game, screen)
                         drawPieces(game, screen)
                 else:
-                    player_id = game.switchPlayer(player_id)
+                    game.switchPlayer()
+                    player_id = game.player_id
             game.end = objective_test(game,player_id)
 
             #to display the winner
@@ -340,14 +339,15 @@ def chooseBoard(tableNum=None):
         table = "attaxx/tab"+tableNum+".txt"
         return table
     
+    
 if __name__ == "__main__":
     start_time = time.time()
     table = chooseBoard()
-    '''pygame.init()
-    screen = setScreen()'''
+    pygame.init()
+    screen = setScreen()
     game = readBoard(table)
-    '''drawBoard(game, screen)
-    jogo_Humano_Humano(game, screen)'''
+    drawBoard(game, screen)
+    jogo_Humano_Humano(game, screen)
     print("--- %.5f seconds ---" % (time.time() - start_time))
 
 def main():
