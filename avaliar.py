@@ -9,14 +9,19 @@ ARGS = {
 }
 
 
-def makegame(games: str,size): # creates gamestate
-    if games=='Attaxx':
-        table = Attaxx.chooseBoard(size)       # ver, só fui buscar inicializaçao inicial do jogo
-        estado = Attaxx.readBoard(table) 
+def makegame(games: str): # creates gamestate
+    if games=='A4x4':
+        estado = Attaxx.create(4)       
+    elif games=='A5x5':
+        estado = Attaxx.create(5) 
+    elif games=='A6x6':
+        estado = Attaxx.create(6) 
+    elif games=='G7x7':
+        initial_board = np.zeros((7, 7),dtype=int)  
+        estado = Go.GameState(initial_board)
     else:
-        n = Go.ask_board_size(size)
-        initial_board = np.zeros((n, n),dtype=int)  
-        estado = Go.GameState(initial_board) # sendo que é estado inicial
+        initial_board = np.zeros((9, 9),dtype=int)  
+        estado = Go.GameState(initial_board)
     return estado
 
 def setind(game,size):
@@ -36,7 +41,7 @@ def setind(game,size):
     return tind
 
 def avaliar(games,size):
-    game=makegame(games,size)
+    game=makegame(games)
     icount=0
     scount=0
     for i in range(400):
