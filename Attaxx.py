@@ -11,6 +11,7 @@ import time
 class GameState:
     def __init__(self, board):
         self.name='attaxx'
+        self.player_id = 1
         self.type=0
         self.board = board
         self.end=-2
@@ -42,7 +43,11 @@ class GameState:
                                 newState.parentPlay = (play, moves[mov][1])
                                 newState.parent = self
                                 self.children.append(newState)
+                                
+    def switchPlayer(self):
+        return -self.player_id    
     
+
 def final_move(game,board,play,player):     #### função que verifica se o estado não tem children
         #print(player,'final')
         gamenp=np.array(board)
@@ -73,15 +78,27 @@ def get_moves(game,cell):
                 moves[mov]=[False]
             else:
                 moves[mov]=[True]
-            
             if 1 in mov or -1 in mov:
                 moves[mov].append(1)
             elif 2 in mov or -2 in mov:
                 moves[mov].append(2)
         return moves
 
+def check_possible_moves(game:GameState):
+    possible_moves = set()    # each move is a tuple of coordinates ((initial_cell),(target_cell))
+    for i in len(game.board): 
+        for j in len(game.board): 
+            if game.board[i][j] != game.player_id:
+                continue
+            moves_from_a_cell = get_moves(game,(i,j))
+            for move in moves_from_a_cell:
+                if move[0]:
+                    target_cell = (i+move[0],j+move[1])
+                    possible_moves.add(((i,j),target_cell))
+    return possible_moves
+
     #draws the board on screen
-def drawBoard(game, screen):
+def drawBoard(game: GameState, screen):
         n = len(game.board)
         screen.fill((255,255,255)) #background branco
 
@@ -166,7 +183,7 @@ def get_and_apply_adjacent(targetCell, newBoard, player_id):
         adjacent = {}
         for vect in vectors:
             play=(targetCell[0]+vect[0],targetCell[1]+vect[1])
-            if play[0]<0 or play[0]>len(newBoard)-1 or play[1]<0 or play[1]>len(newBoard)-1 or newBoard[play[1]][play[0]] != switchPlayer(player_id):
+            if play[0]<0 or play[0]>len(newBoard)-1 or play[1]<0 or play[1]>len(newBoard)-1 or newBoard[play[1]][play[0]] != -player_id:
                 adjacent[vect] = False
             else:
                 adjacent[vect] = True
@@ -212,10 +229,7 @@ def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GU
         newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
     newGame = GameState(newBoard)
     return newGame
-    
 
-def switchPlayer(player_id):
-        return -player_id
 
     #game mode Human vs Human
 def jogo_Humano_Humano(game, screen):
@@ -245,12 +259,12 @@ def jogo_Humano_Humano(game, screen):
                         prevBoard = cp.deepcopy(game.board)
                         game = executeMov(game, coord, targetCell, selected, player_id)
                         if not (np.array_equal(prevBoard,game.board)):
-                            player_id = switchPlayer(player_id)
+                            player_id = game.switchPlayer()
                         clickState=False
                         drawBoard(game, screen)
                         drawPieces(game, screen)
                 else:
-                    player_id = switchPlayer(player_id)
+                    player_id = game.switchPlayer(player_id)
             game.end = objective_test(game,player_id)
 
             #to display the winner
@@ -264,7 +278,8 @@ def jogo_Humano_Humano(game, screen):
                 pygame.display.update()
             pygame.display.update()
 
-def objective_test(game,player): #atualizar count   # com GUI
+
+def objective_test(game: GameState,player):   # atualizar count (com GUI)
     gamenp=np.array(game.board)
     if np.count_nonzero(gamenp==(-player))==0:
         return player
@@ -277,9 +292,9 @@ def objective_test(game,player): #atualizar count   # com GUI
             return player
         if count_o > count_p:
             return (-player)
-    return 0 
+    return 0
 
-def _objective_test(game,player):   # sdevolve também as pontuações
+def _objective_test(game: GameState,player):   # devolve também as pontuações
     gamenp=np.array(game.board)
     if np.count_nonzero(gamenp==(-player))==0:
         return player,len(gamenp),0
@@ -293,6 +308,11 @@ def _objective_test(game,player):   # sdevolve também as pontuações
         if count_o > count_p:
             return (-player), count_o, count_p
     return 0, count_p, count_o
+
+def is_game_finished(game:GameState):
+    if _objective_test(game,game.player_id) == -2:
+        return False
+    return True
 
 
 def setScreen():
