@@ -41,10 +41,12 @@ def start_server_go(host='localhost', port=12345):
     current_agent = 0
 
     jog=0
+    invalid_count = 0   # consecutive invalid moves count 
     
     time.sleep(3)
     while True:
         try:
+            data = None
             data = agents[current_agent].recv(1024).decode()
             if not data:
                 break
@@ -74,7 +76,13 @@ def start_server_go(host='localhost', port=12345):
                     event = pygame.event.poll()
                 else:
                     agents[current_agent].sendall(b'INVALID')
-                    continue
+                    invalid_count += 1
+                    if invalid_count < 5:   # if invalid count reaches 5, then the agent passes
+                        continue
+                    agents[current_agent].sendall(b'TURN LOSS')
+                    agents[1-current_agent].sendall(b'PASS')
+                    GameState = GameState.pass_turn()
+                    invalid_count = 0
                 
             pygame.display.update()
                 
@@ -154,10 +162,12 @@ def start_server_attaxx(host='localhost', port=12345):
     player_id = 1
 
     jog=0
+    invalid_count = 0   # consecutive invalid moves count 
     
     time.sleep(3)
     while True:
         try:
+            data = None
             data = agents[current_agent].recv(1024).decode()
             if not data:
                 break
@@ -183,8 +193,14 @@ def start_server_attaxx(host='localhost', port=12345):
                 draw_pieces_attaxx(GameState, screen)
                 event = pygame.event.poll()
             else:
-                agents[current_agent].sendall(b'INVALID')
-                continue
+                invalid_count += 1
+                if invalid_count < 5:   # if invalid count reaches 5, then the agent passes
+                    agents[current_agent].sendall(b'INVALID')
+                    continue
+                agents[current_agent].sendall(b'TURN LOSS')
+                agents[1-current_agent].sendall(b'PASS')
+                GameState.switchPlayer()
+                invalid_count = 0
 
             pygame.display.update()
 
@@ -210,6 +226,7 @@ def start_server_attaxx(host='localhost', port=12345):
             # Switch to the other agent
             current_agent = 1-current_agent
             player_id = 0-player_id
+            time.sleep(2)
 
         except Exception as e:
             print("Error:", e)
@@ -220,6 +237,7 @@ def start_server_attaxx(host='localhost', port=12345):
     agent1.close()
     agent2.close()
     server_socket.close()
+    
     
 if __name__ == "__main__":
     if game[0]=='G':
