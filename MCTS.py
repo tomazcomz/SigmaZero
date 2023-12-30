@@ -69,12 +69,12 @@ class Node:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, game_state, args, tind, model,eva=False):
+    def __init__(self, game_state, args, model,eva=False):
         self.game_state=game_state
         self.args=args
         self.model=model
         self.evaluate=eva
-        self.ti=tind            # ver * em ideias.md
+        self.ti=self.setind(game_state)            # ver * em ideias.md
         self.root=None # for updating root node 
         self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
         self.map=self.map_act(self.root)
@@ -84,6 +84,22 @@ class MCTS:
             if child.p_action==action:
                 return child
         return None
+    
+    def setind(game):
+        tind=0
+        if game.type==0:
+            match len(game.board):
+                case 4:
+                    tind=2
+                case 6:
+                    tind=3
+        else:
+            match size:
+                case 7:
+                    tind=5
+                case 9:
+                    tind=7
+        return tind
     
     def map_act(self):
         poss=self.root.possible-self.game_state.type

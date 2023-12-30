@@ -1,7 +1,7 @@
 from ioannina import *
 from MCTS import *
 import os
-from avaliar import makegame, setind,agent_v_agent
+from avaliar import makegame, agent_v_agent
 import time
 import Go,Attaxx
 
@@ -12,7 +12,6 @@ ARGS = {
 
 def selfplay(games):
     game=makegame(games)
-    tind=setind(game,len(game.board))
     w=os.listdir(f'modelos/{games}/{len(game.board)}/best')
     for f in w:
         sweights=f
@@ -20,7 +19,5 @@ def selfplay(games):
     teta=Neura(game)
     teta.net.load_weights(sweights)
     for i in range(250000):
-        alpha=MCTS(game,ARGS,tind,teta)
+        alpha=MCTS(game,ARGS,teta)
         winner=agent_v_agent(game,alpha,alpha,True)
-
-        
