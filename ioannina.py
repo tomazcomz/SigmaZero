@@ -97,15 +97,19 @@ class Neura:
 
     def copy_weights(self,bestname):
         src=f'modelos/{self.game.name}/{str(len(self.game.board))}/best/{bestname}.h5'
-        dest=f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5'
+        dest=f'modelos/{self.game.name}/{str(len(self.game.board))}/{self.name}.h5'
         copy(src, dest)
     
     def make_best(self):
         self.net.save_weights(f'modelos/best/{self.name}.h5')
 
-
     def get_best_name(self):
-        return
+        folder_path = "pesos/best"
+        entries = os.listdir(folder_path)
+        for e in entries:
+            file_name = e
+            break
+        return file_name[:-3]
 
 
 '''------------------------------------  CUDA-RELATED  --------------------------------------------'''
