@@ -38,13 +38,10 @@
 
 
 # É Preciso Fazer:
-
     - agent_v_agent attaxx
-    - loss
-    - guardar MCTS policy para treino
 
 
 # A testar:
-
-    - Criação de ficheiros e labels   ->  optimizar.Gen Dataset 
+    - loss
     - Guardar melhor modelo e etcs
+    - guardar MCTS policy para treino

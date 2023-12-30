@@ -330,10 +330,7 @@ if __name__ == "__main__":
     jogo_Humano_Humano(game, screen)'''
     print("--- %.5f seconds ---" % (time.time() - start_time))
 
-def main():
-    start_time = time.time()
-    table = chooseBoard()
-    '''pygame.init()
-    screen = setScreen()'''
+def create(size=None):
+    table = chooseBoard(size)
     game = readBoard(table)
     return game

@@ -35,6 +35,8 @@ class Node:
         self.children=[]
         self.visit_count=0 # N
         self.total_action_value=0 # W
+        self.possible=self.game_state.n**2+self.game_state.type
+        self.map=self.map_act()
 
     def fully_expanded(self):
         return len(self.children)>0 # if no expandable moves and there are children
@@ -55,13 +57,24 @@ class Node:
         else:
             mean_action_value=child.total_action_value/child.visit_count
         return mean_action_value+self.cpuct(self.visit_count)*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
+    
+    def map_act(self):
+        poss=self.possible-self.game_state.type
+        list=[self.possible]
+        a=0
+        for i in range(len(self.game_state.board)):
+            for j in range(len(self.game_state.board[0])):
+                list[a]=(j,i)
+                a+=1
+        list[a]=(-1,-1)    # adaptar para attaxx
 
     def expand(self, p):
-        for _ in range(self.untried_actions.len()):
-            action = self.untried_actions.pop() # coordenada
-            next_state = self.game_state.move(action[0], action[1])
-            child = Node(next_state, parent=self, p_action=action, prior_prob=p)
-            self.children.append(child)
+        for _ in range(self.possible):
+            action=map[_]
+            if action in self.untried_actions:
+                next_state = self.game_state.move(action[0], action[1])
+                child = Node(next_state, parent=self, p_action=action, prior_prob=p[_])
+                self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -101,9 +114,11 @@ class MCTS:
             # expand and evaluate
             if not terminal:
                 p, v = self.model.predict(np.array([node.game_state.board]))
+                p=p[0]
+                v=v[0][0]
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
-                node.expand(p) # adding childs with policy from the NN to list children
+                node.expand(p) # adding children with policy from the NN to list children
 
             # backpropagate
             node.backprop(v)

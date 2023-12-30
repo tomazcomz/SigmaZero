@@ -5,9 +5,8 @@ from copy import deepcopy
 import time
 from go.utils import flood_fill,get_captured_territories
 from go.inputconverter import *
-# from ioannina import Neura
-# from MCTS import *
-# import selfplay
+from MCTS import *
+import optimizar
 
 KOMI = 5.5   # predefined value to be added to white's score
 
@@ -328,30 +327,30 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             time.sleep(4)
         pygame.display.update()
 
-# def agent_v_agent(game: GameState, alphai: MCTS, alphas: MCTS, sp=False):
-#     turn = 1
-#     labellist=[]
-#     while game.end==0:
-#         if turn==1:
-#             action = alpha_i.play() 
-#             pass
-#         else:
-#             # action=alpha_s.play()
-#             pass
-#         if not is_move_valid(game,action):    # checks if move is valid
-#             continue    # if not, it expects another event from the same player
-#         turn = switchPlayer(turn)
-#         game = game.move(action)    
-#         if is_game_finished(game):
-#             game.end_game()
-#         if (sp):
-#             fname=selfplay.sptrainprocd(game.board,alphas.name)
-#             labellist.append(fname)
-#         # to display the winner
-#     if game.end != 0:
-#         if sp:
-#             selfplay.labelmaking(labellist,game.winner)
-#         return game.winner
+def agent_v_agent(game: GameState, alphai, alphas, sp=False):
+    turn = 1
+    labellist=[]
+    while game.end==0:
+        if turn==1:
+            action = alphai.play() 
+            pass
+        else:
+            action=alphas.play()
+            pass
+        if not is_move_valid(game,action):    # checks if move is valid
+            continue    # if not, it expects another event from the same player
+        turn = switchPlayer(turn)
+        game = game.move(action)    
+        if is_game_finished(game):
+            game.end_game()
+        if (sp):
+            fname=optimizar.sptrainprocd(game.board,alphas.name)
+            labellist.append(fname)
+         # to display the winner
+    if game.end != 0:
+        if sp:
+            optimizar.labelmaking(labellist,game.winner)
+        return game.winner
             
 def ask_board_size(inp=None):
     if inp==None:
