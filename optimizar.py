@@ -1,6 +1,7 @@
 from ioannina import *
+import time
 
-def create_train_set(ds_location,game,bs=2048):
+def create_train_set(game,bs=2048):
     x,y=[],[]
     # x <- board
     # y <- policy, label
@@ -11,11 +12,25 @@ def create_train_set(ds_location,game,bs=2048):
         lf=open(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}', 'r')
         x.append(bf)
         y.append(pf, lf)
-        # if game==Go board=gen_batch()
     return x,y
 
-def train(rede: Neura,ds_location,load=True):
-    x,y=create_train_set(ds_location)
+
+def sptrainprocd(game,policy,alphaname):
+    tag=f'{alphaname}_{time.time()}'
+    pfile=f'{game.name}/{len(game.board)}/datasets/policies/{tag}.txt'
+    file=f'{game.name}/{len(game.board)}/datasets/boards/{tag}.txt'
+    np.savetxt(file,game.board)
+    np.savetxt(pfile,policy)
+    return tag
+
+def labelmaking(game,list,winner):
+    for tag in list:
+        file=f'{game.name}/{len(game.board)}/datasets/labels/{tag}.txt'
+        with open(file, 'w') as f:
+            f.write(winner)
+
+def train(rede: Neura,game,load=True):
+    x,y=create_train_set(game)
     rede.compilar()
     if (load):
         rede.net.load_weights(f'pesos/{rede.name}.h5')

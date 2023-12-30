@@ -1,10 +1,5 @@
 import math
 import numpy as np
-import Go
-""" import OldGo
-import Attaxx 
-from ioannina import Neura
- """
 
 """ 
 select, expand and evaluate, backup, play
@@ -30,11 +25,13 @@ class Node:
         self.args=args
         self.parent=parent
         self.p_action=p_action
-        self.untried_actions = Go.check_possible_moves(self.game_state)
+        self.untried_actions = self.game_state.type.check_possible_moves(self.game_state)
         self.prior_prob=prior_prob # P
         self.children=[]
         self.visit_count=0 # N
         self.total_action_value=0 # W
+        self.possible=self.game_state.n**2+self.game_state.type
+        self.map=self.map_act()
 
     def fully_expanded(self):
         return len(self.children)>0 # if no expandable moves and there are children
@@ -55,13 +52,24 @@ class Node:
         else:
             mean_action_value=child.total_action_value/child.visit_count
         return mean_action_value+self.cpuct(self.visit_count)*child.prior_prob*(math.sqrt(self.visit_count)/(1+child.visit_count))
+    
+    def map_act(self):
+        poss=self.possible-self.game_state.type
+        list=[self.possible]
+        a=0
+        for i in range(len(self.game_state.board)):
+            for j in range(len(self.game_state.board[0])):
+                list[a]=(j,i)
+                a+=1
+        list[a]=(-1,-1)    # adaptar para attaxx
 
     def expand(self, p):
-        for _ in range(self.untried_actions.len()):
-            action = self.untried_actions.pop() # coordenada
-            next_state = self.game_state.move(action[0], action[1])
-            child = Node(next_state, parent=self, p_action=action, prior_prob=p)
-            self.children.append(child)
+        for _ in range(self.possible):
+            action=map[_]
+            if action in self.untried_actions:
+                next_state = self.game_state.move(action[0], action[1])
+                child = Node(next_state, parent=self, p_action=action, prior_prob=p[_])
+                self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -70,7 +78,8 @@ class Node:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, args,tind, model,eva=False):
+    def __init__(self, game_state, args, tind, model,eva=False):
+        self.game_state=game_state
         self.args=args
         self.model=model
         self.evaluate=eva
@@ -96,14 +105,16 @@ class MCTS:
                 node=node.select()
 
             # check if node is terminal or not
-            terminal=Go.is_game_finished(node.game_state)
+            terminal=self.game_state.type.is_game_finished(node.game_state)
 
             # expand and evaluate
             if not terminal:
                 p, v = self.model.predict(np.array([node.game_state.board]))
+                p=p[0]
+                v=v[0][0]
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
-                node.expand(p) # adding childs with policy from the NN to list children
+                node.expand(p) # adding children with policy from the NN to list children
 
             # backpropagate
             node.backprop(v)
@@ -113,14 +124,9 @@ class MCTS:
         else:
             temp=self.args['cput']
 
-        """ action_prob=np.zeros(self.game_state.n**2+1)
-        for child in self.root.children:
-            action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp) """
-        
         for child in self.root.children:
             self.pi[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
 
-        #max_prob_index = np.argmax(action_prob)
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
             return (-1, -1)     # definir isto como "pass"
