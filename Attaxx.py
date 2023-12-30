@@ -7,6 +7,8 @@ import copy as cp
 import math
 import random as rd
 import time
+from MCTS import *
+import optimizar
 
 class GameState:
     def __init__(self, board, player_id=1):
@@ -199,7 +201,7 @@ def skip(game: GameState, player):
             return True
         return False
     
-def executeMov(game, initialCell, targetCell, selectedType, player_id):   # used when playing with GUI
+def executeMovGUI(game, initialCell, targetCell, selectedType, player_id):   # used when playing with GUI
         newBoard = cp.deepcopy(game.board)
         if targetCell in selectedType:
             movType = selectedType[targetCell]
@@ -215,7 +217,7 @@ def executeMov(game, initialCell, targetCell, selectedType, player_id):   # used
         newGame = GameState(newBoard, -player_id)
         return newGame
 
-def _executeMov(game: GameState,initialCell,targetCell,player_id):  # without GUI
+def executeMov(game: GameState,initialCell,targetCell,player_id):  # without GUI
     newBoard = cp.deepcopy(game.board)
     moves = get_moves(game,initialCell)
     move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
@@ -276,6 +278,29 @@ def jogo_Humano_Humano(game, screen):
                         exit()
                 pygame.display.update()
             pygame.display.update()
+
+def jogo_Agente_Agente(game, alphai, alphas, sp=False):
+    player_id = 1
+    labellist=[]
+    while game.end==-2:
+        if player_id==1:
+            action = alphai.play()
+        else:
+            action=alphas.play()
+        if action not in check_possible_moves(game):    # checks if move is valid
+            continue    # if not, it expects another event from the same player
+        player_id = -player_id
+        game = executeMov(game, action[0], action[1], player_id)
+        if is_game_finished(game):
+            game.end=objective_test(game, player_id)
+        if (sp):
+            fname=optimizar.sptrainprocd(game.board,alphas.name)
+            labellist.append(fname)
+         # to display the winner
+    if game.end != -2:
+        if sp:
+            optimizar.labelmaking(labellist,game.end)
+        return game.end
 
 
 def objective_test(game: GameState,player):   # atualizar count (com GUI)
