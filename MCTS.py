@@ -30,7 +30,7 @@ class Node:
         self.args=args
         self.parent=parent
         self.p_action=p_action
-        self.untried_actions = Go.check_possible_moves(self.game_state)
+        self.untried_actions = self.game_state.type.check_possible_moves(self.game_state)
         self.prior_prob=prior_prob # P
         self.children=[]
         self.visit_count=0 # N
@@ -70,7 +70,8 @@ class Node:
             self.parent.backprop(v)
 
 class MCTS:
-    def __init__(self, args,tind, model,eva=False):
+    def __init__(self, game_state, args, tind, model,eva=False):
+        self.game_state=game_state
         self.args=args
         self.model=model
         self.evaluate=eva
@@ -96,7 +97,7 @@ class MCTS:
                 node=node.select()
 
             # check if node is terminal or not
-            terminal=Go.is_game_finished(node.game_state)
+            terminal=self.game_state.type.is_game_finished(node.game_state)
 
             # expand and evaluate
             if not terminal:
@@ -113,14 +114,9 @@ class MCTS:
         else:
             temp=self.args['cput']
 
-        """ action_prob=np.zeros(self.game_state.n**2+1)
-        for child in self.root.children:
-            action_prob[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp) """
-        
         for child in self.root.children:
             self.pi[child.action_taken] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
 
-        #max_prob_index = np.argmax(action_prob)
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
             return (-1, -1)     # definir isto como "pass"
