@@ -332,11 +332,9 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
     labellist=[]
     while game.end==0:
         if turn==1:
-            action = alphai.play() 
-            pass
+            action = alphai.play()
         else:
             action=alphas.play()
-            pass
         if not is_move_valid(game,action):    # checks if move is valid
             continue    # if not, it expects another event from the same player
         turn = switchPlayer(turn)

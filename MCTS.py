@@ -59,7 +59,7 @@ class Node:
             action=self.mcts.get_act(_)
             if action in self.untried_actions:
                 next_state = self.game_state.move(action[0], action[1])
-                child = Node(next_state, parent=self, p_action=action, prior_prob=p[_])
+                child = Node(next_state, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
                 self.children.append(child)
     
     def backprop(self, v):
@@ -85,7 +85,7 @@ class MCTS:
                 return child
         return None
     
-    def map_act(self,root):
+    def map_act(self):
         poss=self.root.possible-self.game_state.type
         list=[self.root.possible]
         a=0

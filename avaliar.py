@@ -40,6 +40,11 @@ def setind(game,size):
                 tind=7
     return tind
 
+def agent_v_agent(game,alphai,alphas,sp=False):
+    if game.type==0:
+        return Attaxx.agent_v_agent(game,alphai,alphas,sp)
+    return Go.agent_v_agent(game,alphai,alphas,sp)
+
 def avaliar(games,size):
     game=makegame(games)
     icount=0
@@ -62,34 +67,15 @@ def avaliar(games,size):
         teta_s.net.load_weights(sweights)
         tind=setind(game,size)
         alpha_s=MCTS(ARGS,tind,teta_s,True)
-        if game.type==0:
-            match i%2:
-                case 0:
-                    winner=Attaxx.agent_v_agent(game,alpha_i,alpha_s)
-                    if winner==1:
-                        icount+=1
-                    else:
-                        scount+=1
-                case 1:
-                    winner=Attaxx.agent_v_agent(game,alpha_s,alpha_i)
-                    if winner==2:
-                        icount+=1
-                    else:
-                        scount+=1
+        match i%2:
+            case 0:
+                winner=agent_v_agent(game,alpha_i,alpha_s)
+            case 1:
+                winner=agent_v_agent(game,alpha_s,alpha_i,)
+        if winner==1:
+            icount+=1
         else:
-            match i%2:
-                case 0:
-                    winner=Go.agent_v_agent(game,alpha_i,alpha_s)
-                    if winner==1:
-                        icount+=1
-                    else:
-                        scount+=1
-                case 1:
-                    winner=Go.agent_v_agent(game,alpha_s,alpha_i)
-                    if winner==2:
-                        icount+=1
-                    else:
-                        scount+=1
+            scount+=1
         if icount>220:
             os.remove(sweights)
             alpha_i.make_best()
