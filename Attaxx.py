@@ -286,7 +286,7 @@ def jogo_Agente_Agente(game, alphai, alphas, sp=False):
         if player_id==1:
             action = alphai.play()
         else:
-            action=alphas.play()
+            action = alphas.play()
         if action not in check_possible_moves(game):    # checks if move is valid
             continue    # if not, it expects another event from the same player
         player_id = -player_id
