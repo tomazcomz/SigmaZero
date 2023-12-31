@@ -38,6 +38,30 @@ class GameState:
         next_empty_positions.remove(action)
         next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
         return next_state
+    
+    def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
+        possible_moves = deepcopy(self.empty_positions)
+        if self.play_idx == 0:
+            return possible_moves
+        moves_to_be_removed = set()
+        for move in possible_moves:
+            i,j=move
+            # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide,
+            # and removing moves that would violate the positional superko rule
+            if is_suicide(self.board,self.turn,i,j) or violates_superko(self.board,self.turn,self.previous_boards[self.turn],i,j):
+                moves_to_be_removed.add(move)
+        for move in moves_to_be_removed:
+            possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
+        return possible_moves
+    
+    def is_game_finished(self):
+        if self.pass_count == 2:    # game ends if both players consecutively pass
+            print("Reason for game ending: 2 passes in a row")
+            return True
+        if self.play_idx >= (self.n**2)*2:    # game ends if n*n*2 plays have occurred
+            print(f"Reason for game ending: the limit of {self.n**2} plays was exceeded")
+            return True
+        return False
         
     def pass_turn(self):        # a player chooses to "pass"
         next_previous_boards = deepcopy(self.previous_boards)
@@ -100,7 +124,7 @@ class GameState:
     # methods used to run the Monte Carlo Tree Search algorithm
     def create_children(self):   # creating all the possible new states originated from the current game state
         children = []
-        for action in check_possible_moves(self):
+        for action in self.check_possible_moves():
             i,j=action
             new_state = deepcopy(self)
             new_state.move((i,j))
@@ -114,9 +138,9 @@ class GameState:
             
     def get_value_and_terminated(self,action):   ################### (not sure if this is correct)
         new_state = self.move(action)
-        if is_game_finished(new_state):
+        if self.is_game_finished():
             return 1, True
-        if np.sum(check_possible_moves(new_state))==0:
+        if np.sum(new_state.check_possible_moves())==0:
             return 0, True
         return 0, False
             
@@ -139,22 +163,9 @@ def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method
 
 def is_move_valid(state: GameState,move):
     i,j=move
-    return (i,j) in check_possible_moves(state)
+    return (i,j) in state.check_possible_moves()
     
-def check_possible_moves(state: GameState):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
-    possible_moves = deepcopy(state.empty_positions)
-    if state.play_idx == 0:
-        return possible_moves
-    moves_to_be_removed = set()
-    for move in possible_moves:
-        i,j=move
-        # checking if a position is a territory captured by the opponent of the player playing next for each possible move, in order to avoid suicide,
-        # and removing moves that would violate the positional superko rule
-        if is_suicide(state.board,state.turn,i,j) or violates_superko(state.board,state.turn,state.previous_boards[state.turn],i,j):
-            moves_to_be_removed.add(move)
-    for move in moves_to_be_removed:
-        possible_moves.remove(move)   # removing every move that would cause suicide or violation of the positional superko rule
-    return possible_moves
+
 
 def is_suicide(board,turn,i,j):   # checks if a move would result in a 'suicide'
     new_board = deepcopy(board)
@@ -173,14 +184,6 @@ def violates_superko(board,turn,previous_board,i,j):   # checks if a move would 
         return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
     return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
 
-def is_game_finished(state: GameState):
-    if state.pass_count == 2:    # game ends if both players consecutively pass
-        print("Reason for game ending: 2 passes in a row")
-        return True
-    if state.play_idx >= (state.n**2)*2:    # game ends if n*n*2 plays have occurred
-        print(f"Reason for game ending: the limit of {state.n**2} plays was exceeded")
-        return True
-    return False
 
 
 # implementing the graphical user interface with pygame 
@@ -296,7 +299,7 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
         if event.type == pygame.KEYDOWN:    # tecla P = dar pass
             if event.key == pygame.K_p:
                 game = game.pass_turn()
-            if is_game_finished(game):
+            if game.is_game_finished():
                 game.end_game()
 
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -311,7 +314,7 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
             time.sleep(0.1)
             drawBoard(game, screen)
             drawPieces(game, screen)
-            if is_game_finished(game):
+            if game.is_game_finished():
                 game.end_game()
             arr=gen_batch(game)
             #np.savetxt(f'go/convertiontest/{t}_{step}.txt',arr.reshape(arr.shape[0], -1))
@@ -340,7 +343,7 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
             continue    # if not, it expects another event from the same player
         turn = switchPlayer(turn)
         game = game.move(action)    
-        if is_game_finished(game):
+        if game.is_game_finished():
             game.end_game()
         if (sp):
             fname=optimizar.sptrainprocd(game.board,alphas.name)

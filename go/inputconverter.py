@@ -4,10 +4,10 @@ import random
 Para t<7 todos para trás, são em branco
 '''
 
-def gen_batch(gamestate):
+def gen_batch(gamestate, tr=False):
     ti=random.choice(range(8))
-    prev=get_previous(gamestate,8,[],ti)
-    print(len(prev))
+    prev=get_previous(gamestate,8,[],ti,tr)
+    #print(len(prev))
     frame=convert(gamestate,prev)
     return frame
 
@@ -26,23 +26,24 @@ def convert(gamestate,prev):
                     frame[i][j][16]=gamestate.turn
     return frame
 
-def get_previous(gamestate,i,list,ti):
+def get_previous(gamestate,i,list,ti,tr):
     if i==1:
-        list.append(transform(gamestate.board, ti))
+        list.append(transform(gamestate.board, ti,tr))
         return list
     if (gamestate.parent==None):
         blank(gamestate,list,i)
         return list
     i-=1
-    get_previous(gamestate.parent,i,list,ti)
-    list.append(transform(gamestate.board, ti))
+    get_previous(gamestate.parent,i,list,ti,tr)
+    list.append(transform(gamestate.board, ti,tr))
     return list
 
-def transform(board, ti):
-    """ if ti>3:
-        board = np.flipud(board)
-        ti -= 4
-    return np.rot90(board, ti) """
+def transform(board, ti,tr):
+    if tr:
+        if ti>3:
+            board = np.flipud(board)
+            ti -= 4
+        return np.rot90(board, ti)
     return board
 
 

@@ -48,6 +48,28 @@ class GameState:
                                 
     def switchPlayer(self):
         self.player_id = -self.player_id    
+
+    def check_possible_moves(self):
+        possible_moves = set()    # each move is a tuple of coordinates ((initial_cell),(target_cell))
+        for i in len(self.board): 
+            for j in len(self.board): 
+                if self.board[i][j] != self.player_id:
+                    continue
+                moves_from_a_cell = get_moves(self,(i,j))
+                for move in moves_from_a_cell:
+                    if move[0]:
+                        target_cell = (i+move[0],j+move[1])
+                        possible_moves.add(((i,j),target_cell))
+        return possible_moves
+    
+    def is_game_finished(self):
+        if self.pass_count == 2:    # game ends if both players consecutively pass
+            print("Reason for game ending: 2 passes in a row")
+            return True
+        if self.play_idx >= (self.n**2)*2:    # game ends if n*n*2 plays have occurred
+            print(f"Reason for game ending: the limit of {self.n**2} plays was exceeded")
+            return True
+        return False
     
 
 def final_move(game,board,play,player):     #### função que verifica se o estado não tem children
@@ -86,18 +108,6 @@ def get_moves(game,cell):
                 moves[mov].append(2)
         return moves
 
-def check_possible_moves(game:GameState):
-    possible_moves = set()    # each move is a tuple of coordinates ((initial_cell),(target_cell))
-    for i in len(game.board): 
-        for j in len(game.board): 
-            if game.board[i][j] != game.player_id:
-                continue
-            moves_from_a_cell = get_moves(game,(i,j))
-            for move in moves_from_a_cell:
-                if move[0]:
-                    target_cell = (i+move[0],j+move[1])
-                    possible_moves.add(((i,j),target_cell))
-    return possible_moves
 
     #draws the board on screen
 def drawBoard(game: GameState, screen):
@@ -201,7 +211,7 @@ def skip(game: GameState, player):
             return True
         return False
     
-def executeMovGUI(game, initialCell, targetCell, selectedType, player_id):   # used when playing with GUI
+def moveGUI(game, initialCell, targetCell, selectedType, player_id):   # used when playing with GUI
         newBoard = cp.deepcopy(game.board)
         if targetCell in selectedType:
             movType = selectedType[targetCell]
@@ -217,7 +227,7 @@ def executeMovGUI(game, initialCell, targetCell, selectedType, player_id):   # u
         newGame = GameState(newBoard, -player_id)
         return newGame
 
-def executeMov(game: GameState,initialCell,targetCell,player_id):  # without GUI
+def move(game: GameState,initialCell,targetCell,player_id):  # without GUI
     newBoard = cp.deepcopy(game.board)
     moves = get_moves(game,initialCell)
     move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
@@ -258,7 +268,7 @@ def jogo_Humano_Humano(game, screen):
                     #fazer o movimento da jogada
                     elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
                         targetCell = mousePos(game)
-                        game = executeMov(game, coord, targetCell, selected, player_id)
+                        game = move(game, coord, targetCell, selected, player_id)
                         player_id = game.player_id
                         clickState=False
                         drawBoard(game, screen)
@@ -286,12 +296,12 @@ def jogo_Agente_Agente(game, alphai, alphas, sp=False):
         if player_id==1:
             action = alphai.play()
         else:
-            action = alphas.play()
-        if action not in check_possible_moves(game):    # checks if move is valid
+            action=alphas.play()
+        if action not in game.check_possible_moves():    # checks if move is valid
             continue    # if not, it expects another event from the same player
         player_id = -player_id
-        game = executeMov(game, action[0], action[1], player_id)
-        if is_game_finished(game):
+        game = move(game, action[0], action[1], player_id)
+        if game.is_game_finished():
             game.end=objective_test(game, player_id)
         if (sp):
             fname=optimizar.sptrainprocd(game.board,alphas.name)
@@ -332,11 +342,6 @@ def _objective_test(game: GameState,player):   # devolve também as pontuações
         if count_o > count_p:
             return (-player), count_o, count_p
     return 0, count_p, count_o
-
-def is_game_finished(game:GameState):
-    if _objective_test(game,game.player_id) == -2:
-        return False
-    return True
 
 
 def setScreen():

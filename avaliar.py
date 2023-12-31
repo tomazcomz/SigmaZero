@@ -11,11 +11,11 @@ ARGS = {
 
 def makegame(games: str): # creates gamestate
     if games=='A4x4':
-        estado = Attaxx.create(4)       
+        estado = Attaxx.create('4')       
     elif games=='A5x5':
-        estado = Attaxx.create(5) 
+        estado = Attaxx.create('5') 
     elif games=='A6x6':
-        estado = Attaxx.create(6) 
+        estado = Attaxx.create('6') 
     elif games=='G7x7':
         initial_board = np.zeros((7, 7),dtype=int)  
         estado = Go.GameState(initial_board)
@@ -24,21 +24,6 @@ def makegame(games: str): # creates gamestate
         estado = Go.GameState(initial_board)
     return estado
 
-def setind(game,size):
-    tind=0
-    if game.type==0:
-        match size:
-            case 4:
-                tind=2
-            case 6:
-                tind=3
-    else:
-        match size:
-            case 7:
-                tind=5
-            case 9:
-                tind=7
-    return tind
 
 def agent_v_agent(game,alphai,alphas,sp=False):
     if game.type==0:

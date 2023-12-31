@@ -1,6 +1,16 @@
 import socket
 import random
 import time
+import avaliar
+from MCTS import MCTS
+from ioannina import Neura
+import Go,Attaxx
+
+
+ARGS = {
+    'cpuct': 1.5,
+    'num_searches': 1600
+}
 
 
 def generate_random_move_attaxx():     # ATTAXX
@@ -23,7 +33,7 @@ def choose_move_attaxx():
 
 def choose_move(game_name):   # returns the move in the form "MOVE X,Y"
     if game_name=='go':
-        return generate_random_move_go()
+        #return generate_random_move_go()
         return choose_move_go()
     else:
         return generate_random_move_attaxx()
@@ -51,12 +61,18 @@ def connect_to_server(host='localhost', port=12345):
         ag=2
     first=True
 
+    game_state=avaliar.makegame(Game)
+    teta=Neura(game_state)
+    teta.net.load_weights()
+    alpha=MCTS(game_state,ARGS,teta)
+
     while True:
         # Generate and send a random move
         if ag == 1 or not first:
-            move = choose_move(game_name)
+            move = alpha.play()
             time.sleep(1)
-            client_socket.send(move.encode())
+            smove=str(move)
+            client_socket.send(smove.encode())
             print("Send:",move)
         
             # Wait for server response
@@ -65,11 +81,23 @@ def connect_to_server(host='localhost', port=12345):
             if response == "INVALID":
                 continue
             if "END" in response: break
+            game_state=game_state.move(move)
             
         first=False
         response = client_socket.recv(1024).decode()
+        if response == "PASS":
+            game_state = game_state.pass_turn()
+        else:
+            i=response[5]
+            j=response[7]
+            if game_name == "attaxx":
+                i2=response[9]
+                j2=response[11]
+        action=(int(i),int(j))
         print(f"Server Response2: {response}")
         if "END" in response: break
+        game_state=game_state.move(action)
+        alpha.cut(action)
 
     client_socket.close()
     
