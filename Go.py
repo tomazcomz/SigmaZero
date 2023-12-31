@@ -29,15 +29,19 @@ class GameState:
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self, action):         # placing a piece on the board
-        i,j = action
-        next_board = deepcopy(self.board)
-        next_board[i][j] = self.turn
-        next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
-        next_previous_boards = deepcopy(self.previous_boards)
-        next_previous_boards[self.turn] = deepcopy(next_board)
-        next_empty_positions.remove(action)
-        next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
-        return next_state
+        if action in self.empty_positions or action==(-1,-1):
+            i,j = action
+            next_board = (self.board)
+            next_board[i][j] = self.turn
+            next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
+            next_previous_boards = self.previous_boards
+            next_previous_boards[self.turn] = next_board
+            if action!=(-1,-1):
+                next_empty_positions.remove(action)
+            next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
+            return next_state
+        print(action)
+        return None
     
     def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
         possible_moves = deepcopy(self.empty_positions)
@@ -145,7 +149,7 @@ def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
     empty_positions = deepcopy(empty_positions)
     n = len(board)
-    positions_to_be_checked = [(i+1,j),(i,j+1),(i-1,j),(i,j-1)]
+    positions_to_be_checked = [(min(i+1,n-1),j),(i,min(j+1,n-1)),(max(i-1,0),j),(i,max(j-1,0))]
     for position in positions_to_be_checked:
         i,j = position
         if board[i][j] != player_checked:

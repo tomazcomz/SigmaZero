@@ -39,7 +39,13 @@ class Node:
     def select(self): # chooses child with best ucb 
         if not self.fully_expanded():
             return self
-        selected = max(self.children, key=lambda child: self.ucb(child))
+        selected = None
+        for child in self.children:
+            if selected==None and child!=None:
+                selected=child
+            if (child!=None):
+                if self.ucb(child)>self.ucb(selected):
+                    selected=child
         return selected.select()
     
     def cpuct(self, visit_count): # defining cpuct according to paper
