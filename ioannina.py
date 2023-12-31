@@ -7,6 +7,7 @@ import os, random
 import names
 from go.inputconverter import *
 from shutil import copy
+import math
 
 """ 
 
@@ -18,7 +19,8 @@ class Neura:
     def __init__(self,game,name=None,n_resblocks=19):        # loss function and learning rate?
         self.input(game)
         self.game=game
-        self.build(n_resblocks,self.nf)
+        self.res=n_resblocks
+        self.build(self.res,self.nf)
         if name==None:
             self.name=names.get_last_name()+game.name+str(len(game.board))
             self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
@@ -29,14 +31,16 @@ class Neura:
 
     def input(self,game):
         if (game.type==0):
-            self.nf=256                 # tem que ser menos
+            self.nf=math.ceil(len(game.board)**2*0.709)                 # tem que ser menos
             self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
             self.passes=0
         else:
-            self.nf=256
+            self.nf=math.ceil(len(game.board)**2*0.709)
+            #self.nf=256
             self.passes=1
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
         self.action_space=len(game.board)*len(game.board[0])+self.passes
+       #self.res=len(game.board)
 
     # Se calhar devíamos adaptar o kernel size, devido as dimensões do tabuleiro
     def convblock(self,input,nf):
@@ -44,10 +48,24 @@ class Neura:
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         return rnl
+    
+    def convblock3(self,input,nf):
+        c=layers.Conv3D(nf,3,(1,1,1),'same')(input)
+        b=layers.BatchNormalization()(c)
+        rnl=layers.Activation(activation='softplus')(b)
+        return rnl
 
     def resblock(self,input,i,nf):
         cb=self.convblock(input,nf)
         c=layers.Conv2D(nf,3,(1,1),'same')(cb)
+        b=layers.BatchNormalization()(c)
+        s=layers.Add()([b,input])
+        rnl=layers.Activation(activation='softplus',name=f'endrestower{i}')(s)
+        return rnl
+    
+    def resblock3(self,input,i,nf):
+        cb=self.convblock3(input,nf)
+        c=layers.Conv3D(nf,3,(1,1,1),'same')(cb)
         b=layers.BatchNormalization()(c)
         s=layers.Add()([b,input])
         rnl=layers.Activation(activation='softplus',name=f'endrestower{i}')(s)
@@ -79,11 +97,17 @@ class Neura:
         # medium=(z-v)^2 -pi^T(dot)log(p)
         return (polzed[1]-pival[1])**2-np.dot(pit,np.log(pol))
     
-    def build(self,n_res,nf):
-        conv=self.convblock(self.inpt,nf)
-        restower=conv
-        for i in range(n_res):
-            restower=self.resblock(restower,i,nf)
+    def build(self,n_res,nf,):
+        if self.game.type==0:
+            conv=self.convblock3(self.inpt,nf)
+            restower=conv
+            for i in range(n_res):
+                restower=self.resblock3(restower,i,nf)
+        else:
+            conv=self.convblock(self.inpt,nf)
+            restower=conv
+            for i in range(n_res):
+                restower=self.resblock(restower,i,nf)
         polh=self.polhead(restower)
         valh=self.valhead(restower,nf)
         outputs=[polh,valh]

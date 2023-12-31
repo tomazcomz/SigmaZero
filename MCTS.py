@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from go.inputconverter import *
+import time
 """ 
 select, expand and evaluate, backup, play
 
@@ -86,7 +87,7 @@ class MCTS:
         return None
     
     def setind(self,game):
-        tind=0
+        tind=10**(-4)
         if game.type==0:
             match len(game.board):
                 case 4:
@@ -116,7 +117,7 @@ class MCTS:
         self.root=self.get_child(self.root, action)
     
     def play(self):
-
+        print('antes ',time.time())
         for _ in range(self.args['num_searches']):
             node=self.root
             #print(_)
@@ -126,7 +127,7 @@ class MCTS:
 
             # check if node is terminal or not
             terminal=self.game_state.is_game_finished()
-
+            
             # expand and evaluate
             if not terminal:
                 #print('oy')
@@ -134,23 +135,29 @@ class MCTS:
                     board=gen_batch(self.game_state)
                 else:
                     board=node.game_state.board
-                p, v = self.model.net.predict(np.array([board]))
+                print('antes convert ',time.time())
+                arr=gen_batch(self.game_state)
+                print('convert ',time.time())
+                p, v = self.model.net.predict(np.array([arr]),batch_size=1)
+                print('depois ',time.time(),' ',_)
                 p=p[0]
                 v=v[0][0]
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
                 node.expand(p) # adding children with policy from the NN to list children
+            
 
             # backpropagate
             node.backprop(v)
+        print('fim ',time.time())
 
         if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
-            temp=self.args['cput']
+            temp=10**(-4)
 
         for child in self.root.children:
-            self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/self.visit_count**(1/temp)
+            self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
 
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:

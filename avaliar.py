@@ -50,8 +50,7 @@ def avaliar(games,size):
             sweights=f
             break
         teta_s.net.load_weights(sweights)
-        tind=setind(game,size)
-        alpha_s=MCTS(ARGS,tind,teta_s,True)
+        alpha_s=MCTS(ARGS,teta_s,True)
         match i%2:
             case 0:
                 winner=agent_v_agent(game,alpha_i,alpha_s)

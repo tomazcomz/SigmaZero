@@ -7,7 +7,8 @@ Para t<7 todos para trás, são em branco
 def gen_batch(gamestate, tr=False):
     ti=random.choice(range(8))
     prev=get_previous(gamestate,8,[],ti,tr)
-    #print(len(prev))
+    """ prev=np.array(prev)
+    prev=np.flip(prev,axis=0) """
     frame=convert(gamestate,prev)
     return frame
 

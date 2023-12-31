@@ -33,8 +33,8 @@ class GameState:
         next_board = deepcopy(self.board)
         next_board[i][j] = self.turn
         next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
-        next_previous_boards = deepcopy(self.previous_boards)
-        next_previous_boards[self.turn] = deepcopy(next_board)
+        next_previous_boards = self.previous_boards
+        next_previous_boards[self.turn] = next_board
         next_empty_positions.remove(action)
         next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
         return next_state
@@ -121,35 +121,13 @@ class GameState:
         self.end = 1
         self.winner,self.scores = self.get_winner()
 
-    # methods used to run the Monte Carlo Tree Search algorithm
-    def create_children(self):   # creating all the possible new states originated from the current game state
-        children = []
-        for action in self.check_possible_moves():
-            i,j=action
-            new_state = deepcopy(self)
-            new_state.move((i,j))
-            children.append(new_state)
-        return children
-            
-    def get_next_state(self,state,action):   # given an action, this method returns the resulting game state
-        next_state = deepcopy(state)
-        next_state = next_state.move(action)
-        return next_state
-            
-    def get_value_and_terminated(self,action):   ################### (not sure if this is correct)
-        new_state = self.move(action)
-        if self.is_game_finished():
-            return 1, True
-        if np.sum(new_state.check_possible_moves())==0:
-            return 0, True
-        return 0, False
             
 # auxiliar methods to implement Go's game logic
 def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method that checks for captures, given a board and a turn, and returns the new board
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
     empty_positions = deepcopy(empty_positions)
     n = len(board)
-    positions_to_be_checked = [(i+1,j),(i,j+1),(i-1,j),(i,j-1)]
+    positions_to_be_checked = [(min(i+1,n-1),j),(i,min(j+1,n-1)),(max(i-1,0),j),(i,max(j-1,0))]
     for position in positions_to_be_checked:
         i,j = position
         if board[i][j] != player_checked:

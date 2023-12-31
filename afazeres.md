@@ -38,11 +38,12 @@
 
 
 # É Preciso Fazer:
-    - pensar no caso do Attaxx
     - remover weights best e não best
-
+    - o resto
+    - Score Modelo - a
 
 # A testar:
+    - MCTS debugging
     - loss
     - Guardar melhor modelo e etcs
     - guardar MCTS policy para treino
