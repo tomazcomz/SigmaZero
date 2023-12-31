@@ -1,6 +1,6 @@
 import math
 import numpy as np
-
+from go.inputconverter import *
 """ 
 select, expand and evaluate, backup, play
 
@@ -25,7 +25,7 @@ class Node:
         self.args=args
         self.parent=parent
         self.p_action=p_action
-        self.untried_actions = self.game_state.type.check_possible_moves(self.game_state)
+        self.untried_actions = self.game_state.check_possible_moves()
         self.prior_prob=prior_prob # P
         self.children=[]
         self.visit_count=0 # N
@@ -37,8 +37,8 @@ class Node:
         return len(self.children)>0 # if no expandable moves and there are children
     
     def select(self): # chooses child with best ucb 
-        if not self.children:
-            return None
+        if not self.fully_expanded():
+            return self
         selected = max(self.children, key=lambda child: self.ucb(child))
         return selected.select()
     
@@ -58,8 +58,8 @@ class Node:
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
             if action in self.untried_actions:
-                next_state = self.game_state.move(action[0], action[1])
-                child = Node(next_state, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
+                next_state = self.game_state.move(action)
+                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
                 self.children.append(child)
     
     def backprop(self, v):
@@ -75,9 +75,9 @@ class MCTS:
         self.model=model
         self.evaluate=eva
         self.ti=self.setind(game_state)            # ver * em ideias.md
-        self.root=None # for updating root node 
+        self.root=Node(self.game_state, self.args,self)
         self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
-        self.map=self.map_act(self.root)
+        self.map=self.map_act()
 
     def get_child(self, node, action): # find child node associated with action
         for child in node.children:
@@ -85,7 +85,7 @@ class MCTS:
                 return child
         return None
     
-    def setind(game):
+    def setind(self,game):
         tind=0
         if game.type==0:
             match len(game.board):
@@ -94,7 +94,7 @@ class MCTS:
                 case 6:
                     tind=3
         else:
-            match size:
+            match len(game.board):
                 case 7:
                     tind=5
                 case 9:
@@ -102,35 +102,39 @@ class MCTS:
         return tind
     
     def map_act(self):
-        poss=self.root.possible-self.game_state.type
-        list=[self.root.possible]
-        a=0
+        list=[]
         for i in range(len(self.game_state.board)):
             for j in range(len(self.game_state.board[0])):
-                list[a]=(j,i)
-                a+=1
-        list[a]=(-1,-1)    # adaptar para attaxx
+                list.append((i,j))
+        list.append((-1,-1))    # adaptar para attaxx
+        return list
 
     def get_act(self,_):
         return  self.map[_]
     
+    def cut(self,action):
+        self.root=self.get_child(self.root, action)
+    
     def play(self):
-        if self.root is None:
-            self.root=Node(self.game_state, self.args,self)
 
         for _ in range(self.args['num_searches']):
             node=self.root
-
+            #print(_)
             # selection
             while node.fully_expanded():
                 node=node.select()
 
             # check if node is terminal or not
-            terminal=self.game_state.type.is_game_finished(node.game_state)
+            terminal=self.game_state.is_game_finished()
 
             # expand and evaluate
             if not terminal:
-                p, v = self.model.predict(np.array([node.game_state.board]))
+                #print('oy')
+                if self.game_state.type==1:
+                    board=gen_batch(self.game_state)
+                else:
+                    board=node.game_state.board
+                p, v = self.model.net.predict(np.array([board]))
                 p=p[0]
                 v=v[0][0]
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
@@ -153,5 +157,5 @@ class MCTS:
             return (-1, -1)     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
-            self.root=self.get_child(self.root, played) # new root node is the child corresponding to the played action
+            self.cut(played) # new root node is the child corresponding to the played action
             return played

@@ -38,7 +38,7 @@
 
 
 # É Preciso Fazer:
-    - agent_v_agent attaxx
+    - pensar no caso do Attaxx
     - remover weights best e não best
 
 

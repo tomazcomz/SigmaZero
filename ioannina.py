@@ -21,9 +21,11 @@ class Neura:
         self.build(n_resblocks,self.nf)
         if name==None:
             self.name=names.get_last_name()+game.name+str(len(game.board))
+            self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
         else:
             self.name=name
-        self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
+            self.net.load_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
+        
 
     def input(self,game):
         if (game.type==0):
