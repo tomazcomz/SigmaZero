@@ -166,6 +166,7 @@ class MCTS:
         for child in self.root.children:
             if child.visit_count == 0:  ###########
                 self.pi[self.map.index(child.p_action)] = 0
+                self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)
             else:
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
 
