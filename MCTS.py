@@ -26,10 +26,10 @@ class Node:
         self.args=args
         self.parent=parent
         self.p_action=p_action
-        self.prior_prob=prior_prob # P
+        self.prior_prob=prior_prob   # P
         self.children=[]
-        self.visit_count=0 # N
-        self.total_action_value=0 # W
+        self.visit_count=0   # N
+        self.total_action_value=0   # W
         self.possible=self.game_state.n**2+self.game_state.type
         self.mcts=mcts
 
@@ -161,11 +161,9 @@ class MCTS:
             temp=1
         else:
             temp=10**(-4)
-            # temp = 0
 
         for child in self.root.children:
-            if child.visit_count == 0:  ###########
-                self.pi[self.map.index(child.p_action)] = 0
+            if child.visit_count == 0:
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)
             else:
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
