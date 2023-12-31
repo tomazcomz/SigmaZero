@@ -26,7 +26,6 @@ class Node:
         self.args=args
         self.parent=parent
         self.p_action=p_action
-        self.untried_actions = self.game_state.check_possible_moves()
         self.prior_prob=prior_prob # P
         self.children=[]
         self.visit_count=0 # N
@@ -58,10 +57,9 @@ class Node:
     def expand(self, p):
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
-            if action in self.untried_actions:
-                next_state = self.game_state.move(action)
-                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
-                self.children.append(child)
+            next_state = self.game_state.move(action)
+            child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
+            self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -119,6 +117,7 @@ class MCTS:
     def play(self):
         print('antes ',time.time())
         for _ in range(self.args['num_searches']):
+            print('inicio ',time.time())
             node=self.root
             #print(_)
             # selection
