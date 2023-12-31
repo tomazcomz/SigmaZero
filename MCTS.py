@@ -47,6 +47,8 @@ class Node:
     
     def ucb(self, child): # uses variant of the PUCT algorithm
         # mean_action_value Q=W/N
+        if child is None:   # to avoid 'NoneType' error
+            return 0
         if child.visit_count==0:
             mean_action_value=0 
         else:
@@ -57,8 +59,13 @@ class Node:
     def expand(self, p):
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
+            # if action not in self.game_state.check_possible_moves():    # to avoid 'NoneType' error
+            #     continue
             next_state = self.game_state.move(action)
-            child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
+            if next_state is None:  # to avoid 'NoneType' error
+                child = None
+            else:
+                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
             self.children.append(child)
     
     def backprop(self, v):
@@ -134,9 +141,9 @@ class MCTS:
                     board=gen_batch(self.game_state)
                 else:
                     board=node.game_state.board
-                print('antes convert ',time.time())
+                # print('antes convert ',time.time())
                 arr=gen_batch(self.game_state)
-                print('convert ',time.time())
+                # print('convert ',time.time())
                 p, v = self.model.net.predict(np.array([arr]),batch_size=1)
                 print('depois ',time.time(),' ',_)
                 p=p[0]
@@ -154,9 +161,13 @@ class MCTS:
             temp=1
         else:
             temp=10**(-4)
+            # temp = 0
 
         for child in self.root.children:
-            self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
+            if child.visit_count == 0:  ###########
+                self.pi[self.map.index(child.p_action)] = 0
+            else:
+                self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
 
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
@@ -164,4 +175,5 @@ class MCTS:
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.cut(played) # new root node is the child corresponding to the played action
+            print(f"Play chosen: {played}")
             return played
