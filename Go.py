@@ -122,14 +122,10 @@ class GameState:
         self.winner,self.scores = self.get_winner()
 
     # methods used to run the Monte Carlo Tree Search algorithm
-    def create_children(self):   # creating all the possible new states originated from the current game state
+    """     def create_children(self):   # creating all the possible new states originated from the current game state
         children = []
-        for action in self.check_possible_moves():
-            i,j=action
-            new_state = deepcopy(self)
-            new_state.move((i,j))
-            children.append(new_state)
-        return children
+        poss=self.check_possible_moves()
+        return  """
             
     def get_next_state(self,state,action):   # given an action, this method returns the resulting game state
         next_state = deepcopy(state)

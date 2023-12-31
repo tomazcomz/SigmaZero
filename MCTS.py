@@ -1,6 +1,7 @@
 import math
 import numpy as np
 from go.inputconverter import *
+import time
 """ 
 select, expand and evaluate, backup, play
 
@@ -25,7 +26,6 @@ class Node:
         self.args=args
         self.parent=parent
         self.p_action=p_action
-        self.untried_actions = self.game_state.check_possible_moves()
         self.prior_prob=prior_prob # P
         self.children=[]
         self.visit_count=0 # N
@@ -57,10 +57,9 @@ class Node:
     def expand(self, p):
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
-            if action in self.untried_actions:
-                next_state = self.game_state.move(action)
-                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
-                self.children.append(child)
+            next_state = self.game_state.move(action)
+            child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
+            self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -118,6 +117,7 @@ class MCTS:
     def play(self):
 
         for _ in range(self.args['num_searches']):
+            print('inicio ',time.time())
             node=self.root
             #print(_)
             # selection
@@ -134,12 +134,15 @@ class MCTS:
                     board=gen_batch(self.game_state)
                 else:
                     board=node.game_state.board
+                print('antes ',time.time())
                 p, v = self.model.net.predict(np.array([board]))
+                print('depois ',time.time())
                 p=p[0]
                 v=v[0][0]
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
                 node.expand(p) # adding children with policy from the NN to list children
+                print('fim ',time.time())
 
             # backpropagate
             node.backprop(v)
