@@ -32,7 +32,7 @@ class GameState:
         i,j = action
         next_board = deepcopy(self.board)
         next_board[i][j] = self.turn
-        next_board, next_empty_positions = check_for_captures(next_board, self.turn, self.empty_positions)
+        next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
         next_previous_boards = deepcopy(self.previous_boards)
         next_previous_boards[self.turn] = deepcopy(next_board)
         next_empty_positions.remove(action)
@@ -141,19 +141,20 @@ class GameState:
         return 0, False
             
 # auxiliar methods to implement Go's game logic
-def check_for_captures(board, turn, empty_positions:set = set()):   # method that checks for captures, given a board and a turn, and returns the new board
+def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method that checks for captures, given a board and a turn, and returns the new board
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
     empty_positions = deepcopy(empty_positions)
     n = len(board)
-    for i in range(n):
-        for j in range(n):
-            if board[i][j] != player_checked:
-                continue    # only checks for captured pieces of the player who didn't make the last move
-            captured_group = flood_fill(i,j,board)
-            if captured_group is not None:
-                for (x,y) in captured_group:
-                    board[x][y] = 0    # updating the board after a capture
-                    empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
+    positions_to_be_checked = [(i+1,j),(i,j+1),(i-1,j),(i,j-1)]
+    for position in positions_to_be_checked:
+        i,j = position
+        if board[i][j] != player_checked:
+            continue    # only checks for captured pieces of the player who didn't make the last move
+        captured_group = flood_fill(i,j,board)
+        if captured_group is not None:
+            for (x,y) in captured_group:
+                board[x][y] = 0    # updating the board after a capture
+                empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
     return board, empty_positions   # returning the new board and the new empty positions list
 
 def is_move_valid(state: GameState,move):
@@ -165,7 +166,7 @@ def is_move_valid(state: GameState,move):
 def is_suicide(board,turn,i,j):   # checks if a move would result in a 'suicide'
     new_board = deepcopy(board)
     new_board[i][j] = turn    # playing the move in question in a new board
-    new_board, _ = check_for_captures(new_board, turn)    # removing the opponent's captured pieces after the new move
+    new_board, _ = check_for_captures(i,j,new_board, turn)    # removing the opponent's captured pieces after the new move
     captured_group = flood_fill(i,j,new_board)  # checking if the position (i,j) would be captured after the new move
     if captured_group is not None:
         return True     # if the position would be captured after the new move, then this move results in a suicide
@@ -174,7 +175,7 @@ def is_suicide(board,turn,i,j):   # checks if a move would result in a 'suicide'
 def violates_superko(board,turn,previous_board,i,j):   # checks if a move would result in a violation of the ko rule (which is a consequence of the positional superko rule)
     new_board = deepcopy(board)
     new_board[i][j] = turn    # playing the move in question in a new board
-    new_board, _ = check_for_captures(new_board, turn)   # removing the opponent's captured pieces after the new move
+    new_board, _ = check_for_captures(i,j,new_board, turn)   # removing the opponent's captured pieces after the new move
     if np.array_equal(new_board, previous_board):
         return True   # if this move would result in the same board configuration as this player's previous move, then it would violate the ko rule and, consequently, the positional superko rule
     return False    # otherwise, this move doesn't violate the positional superko rule, thus being playable
