@@ -118,7 +118,7 @@ class MCTS:
         return  self.map[_]
     
     def cut(self,action):
-        self.root=self.get_child(self.root, action)
+        self.root=self.root.children[self.map.index(action)]
 
 
     def printTree(self, node, level=0, prefix=""):
@@ -179,7 +179,7 @@ class MCTS:
             return (-1, -1)     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
-            self.printTree(self.get_child(self.root,played))
+            self.printTree(self.root.children[self.map.index(played)])
             self.cut(played) # new root node is the child corresponding to the played action
             print(f"Play chosen: {played}")
             return played
