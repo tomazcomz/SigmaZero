@@ -121,7 +121,6 @@ class MCTS:
         self.root=self.get_child(self.root, action)
     
     def printTree(self, node, level=0, prefix=""):
-        """Prints the hierarchical structure of the tree starting from the given node."""
         if node is not None:
             print(" " * level * 2 + f"{prefix}+- action: {node.p_action}, N: {node.visit_count}, W: {node.total_action_value}")
             for i, child in enumerate(node.children):
@@ -159,9 +158,10 @@ class MCTS:
 
             # backpropagate
             node.backprop(v)
-            #self.printTree(node)
         #print('fim ',time.time())
+            
         self.printTree(self.root)
+
         if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
