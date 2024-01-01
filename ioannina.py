@@ -22,7 +22,7 @@ class Neura:
         self.res=n_resblocks
         self.build(self.res,self.nf)
         if name==None:
-            self.name=names.get_last_name()+game.name+str(len(game.board))
+            self.name=names.get_last_name()+game.name+str(len(game.board))+self.res
             self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
         else:
             self.name=name

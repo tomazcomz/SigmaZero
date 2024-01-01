@@ -119,6 +119,13 @@ class MCTS:
     
     def cut(self,action):
         self.root=self.get_child(self.root, action)
+
+
+    def printTree(self, node, level=0, prefix=""):
+        if node is not None:
+            print(" " * level * 2 + f"{prefix}+- action: {node.p_action}, N: {node.visit_count}, W: {node.total_action_value}")
+            for i, child in enumerate(node.children):
+                self.printTree(child, level + 1, f"{prefix}|  " if i < len(node.children) - 1 else f"{prefix}   ")
     
     def play(self):
         #print('antes ',time.time())
@@ -153,6 +160,8 @@ class MCTS:
             # backpropagate
             node.backprop(v)
         #print('fim ',time.time())
+        
+        
 
         if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1
@@ -170,6 +179,7 @@ class MCTS:
             return (-1, -1)     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
+            self.printTree(self.get_child(self.root,played))
             self.cut(played) # new root node is the child corresponding to the played action
             print(f"Play chosen: {played}")
             return played
