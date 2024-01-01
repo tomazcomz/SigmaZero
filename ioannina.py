@@ -22,7 +22,7 @@ class Neura:
         self.res=n_resblocks
         self.build(self.res,self.nf)
         if name==None:
-            self.name=names.get_last_name()+game.name+str(len(game.board))+self.res
+            self.name=names.get_last_name()+game.name+str(len(game.board))+str(self.res)
             self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
         else:
             self.name=name
@@ -127,15 +127,24 @@ class Neura:
         copy(src, dest)
     
     def make_best(self):
+        os.remove((f'modelos/{self.game.name}/{str(len(self.game.board))}/best/{self.get_best_name()}.h5'))
         self.net.save_weights(f'modelos/{self.game.name}/{str(len(self.game.board))}/best/{self.name}.h5')
 
     def get_best_name(self):
-        folder_path = "pesos/best"
+        folder_path = f"modelos/{self.game.name}/{len(self.game.board)}/best"
         entries = os.listdir(folder_path)
         for e in entries:
             file_name = e
             break
         return file_name[:-3]
+
+def get_best_name(game):
+    folder_path = f"modelos/{game.name}/{len(game.board)}/best"
+    entries = os.listdir(folder_path)
+    for e in entries:
+        file_name = e
+        break
+    return file_name[:-3]
 
 
 '''------------------------------------  CUDA-RELATED  --------------------------------------------'''

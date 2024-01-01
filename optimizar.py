@@ -30,11 +30,10 @@ def labelmaking(game,list,winner):
         with open(file, 'w') as f:
             f.write(winner)
 
-def train(rede: Neura,game,load=True):
+def train(game):
     x,y=create_train_set(game)
+    rede=Neura(game,name=get_best_name(game))
     rede.compilar()
-    if (load):
-        rede.net.load_weights(f'pesos/{rede.name}.h5')
     for i in range(1000):
         history=rede.net.fit(x,y)
-    rede.net.save_weights(f'pesos/{rede.name}.h5')
+    rede.net.save_weights(f'modelos/{rede.game.name}/{str(len(rede.game.board))}/{rede.name}.h5')

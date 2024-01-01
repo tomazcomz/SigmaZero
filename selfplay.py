@@ -10,9 +10,9 @@ ARGS = {
     'num_searches': 1600
 }
 
-def selfplay(games):
-    game=makegame(games)
-    w=os.listdir(f'modelos/{games}/{len(game.board)}/best')
+def selfplay(game):
+    #game=makegame(games)
+    w=os.listdir(f'modelos/{game.name}/{len(game.board)}/best')
     for f in w:
         sweights=f
         break

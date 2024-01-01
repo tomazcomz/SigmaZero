@@ -35,21 +35,15 @@ def avaliar(games,size):
     icount=0
     scount=0
     for i in range(400):
-        teta_i=Neura(game)
-        teta_i.compilar()
         w=os.listdir(f'modelos/{games}/{size}')
         for f in w:
-            iweights=f
+            iweights=f[:-3]
             break
-        teta_i.net.load_weights(iweights)
-        alpha_i=MCTS(ARGS,tind,teta_i,True)
-        teta_s=Neura(game)
+        teta_i=Neura(game,name=iweights,n_resblocks=len(game.board))
+        teta_i.compilar()
+        alpha_i=MCTS(ARGS,teta_i,True)
+        teta_s=Neura(game,name=get_best_name(game),n_resblocks=len(game.board))
         teta_s.compilar()
-        w=os.listdir(f'modelos/{games}/{size}/best')
-        for f in w:
-            sweights=f
-            break
-        teta_s.net.load_weights(sweights)
         alpha_s=MCTS(ARGS,teta_s,True)
         match i%2:
             case 0:
@@ -60,10 +54,7 @@ def avaliar(games,size):
             icount+=1
         else:
             scount+=1
-        if icount>220:
-            os.remove(sweights)
-            alpha_i.make_best()
-            os.remove(iweights)
-        else:
-            os.remove(iweights)
+    if icount>220:
+        alpha_i.make_best()
+    os.remove((f'modelos/{game.name}/{str(len(game.board))}/best/{iweights}.h5'))
             
