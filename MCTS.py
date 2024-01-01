@@ -59,14 +59,13 @@ class Node:
     def expand(self, p):
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
-            # if action not in self.game_state.check_possible_moves():    # to avoid 'NoneType' error
-            #     continue
-            next_state = self.game_state.move(action)
-            if next_state is None:  # to avoid 'NoneType' error
-                child = None
-            else:
-                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
-            self.children.append(child)
+            if action in self.game_state.empty_positions:    # to avoid 'NoneType' error
+                next_state = self.game_state.move(action)
+                if next_state is None:  # to avoid 'NoneType' error
+                    child = None
+                else:
+                    child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
+                self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -122,9 +121,9 @@ class MCTS:
         self.root=self.get_child(self.root, action)
     
     def play(self):
-        print('antes ',time.time())
+        #print('antes ',time.time())
         for _ in range(self.args['num_searches']):
-            print('inicio ',time.time())
+            #print('inicio ',time.time())
             node=self.root
             #print(_)
             # selection
@@ -136,16 +135,14 @@ class MCTS:
             
             # expand and evaluate
             if not terminal:
-                #print('oy')
+                #print('antes convert ',time.time())
                 if self.game_state.type==1:
-                    board=gen_batch(self.game_state)
+                    board=gen_batch(node.game_state)
                 else:
                     board=node.game_state.board
-                # print('antes convert ',time.time())
-                arr=gen_batch(self.game_state)
-                # print('convert ',time.time())
-                p, v = self.model.net.predict(np.array([arr]),batch_size=1)
-                print('depois ',time.time(),' ',_)
+                #print('convert ',time.time())
+                p, v = self.model.net.predict(np.array([board]),batch_size=1)
+                #print('depois ',time.time(),' ',_)
                 p=p[0]
                 v=v[0][0]
                 if self.game_state.play_idx-1>self.ti or self.evaluate:
@@ -155,7 +152,7 @@ class MCTS:
 
             # backpropagate
             node.backprop(v)
-        print('fim ',time.time())
+        #print('fim ',time.time())
 
         if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1

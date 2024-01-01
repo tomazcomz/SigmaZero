@@ -31,11 +31,11 @@ class Neura:
 
     def input(self,game):
         if (game.type==0):
-            self.nf=math.ceil(len(game.board)**2*0.709)                 # tem que ser menos
+            self.nf=math.ceil(len(game.board)**2*0.709+len(game.board)**2)                 
             self.inpt=layers.Input(shape=(len(game.board),len(game.board[0]),1))
             self.passes=0
         else:
-            self.nf=math.ceil(len(game.board)**2*0.709)
+            self.nf=math.ceil(len(game.board)**2*0.709+len(game.board)**2)
             #self.nf=256
             self.passes=1
             self.inpt=layers.Input((len(game.board),len(game.board[0]),17))
