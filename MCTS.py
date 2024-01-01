@@ -147,7 +147,7 @@ class MCTS:
                 else:
                     board=node.game_state.board
                 #print('convert ',time.time())
-                p, v = self.model.net.predict(np.array([board]),batch_size=1)
+                p, v = self.model.net.predict(np.array([board]),batch_size=1,verbose=2)
                 #print('depois ',time.time(),' ',_)
                 p=p[0]
                 v=v[0][0]
@@ -160,7 +160,7 @@ class MCTS:
             node.backprop(v)
         #print('fim ',time.time())
             
-        self.printTree(self.root)
+        #self.printTree(self.root)
 
         if self.game_state.play_idx-1<=self.ti and not self.evaluate:
             temp=1
