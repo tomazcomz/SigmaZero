@@ -21,7 +21,7 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, game_state, args, mcts,untried_actions=None, parent=None, p_action=None, prior_prob=0):
+    def __init__(self, game_state, args, mcts, parent=None, p_action=None, prior_prob=0):
         self.game_state=game_state
         self.args=args
         self.parent=parent
@@ -83,6 +83,7 @@ class MCTS:
         self.root=Node(self.game_state, self.args,self)
         self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
         self.map=self.map_act()
+        self.play_idx=0
 
     def get_child(self, node, action): # find child node associated with action
         for child in node.children:
@@ -119,7 +120,6 @@ class MCTS:
     
     def cut(self,action):
         self.root=self.root.children[self.map.index(action)]
-
 
     def printTree(self, node, level=0, prefix=""):
         if node is not None:
@@ -161,25 +161,27 @@ class MCTS:
             node.backprop(v)
         #print('fim ',time.time())
         
-        
+        self.printTree(self.root)
 
-        if self.game_state.play_idx-1<=self.ti and not self.evaluate:
+        if self.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
             temp=10**(-4)
 
         for child in self.root.children:
-            if child.visit_count == 0:
-                self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)
-            else:
+            if child.visit_count == 0 or child.visit_count == 1:
+                self.pi[self.map.index(child.p_action)] = 0
+            else: 
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
-
+        print(self.pi)
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
+            self.play_idx+=1
             return (-1, -1)     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
-            self.printTree(self.root.children[self.map.index(played)])
             self.cut(played) # new root node is the child corresponding to the played action
+            self.printTree(self.root)
             print(f"Play chosen: {played}")
+            self.play_idx+=1
             return played
