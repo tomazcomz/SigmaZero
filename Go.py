@@ -33,7 +33,7 @@ class GameState:
             next_state = self.pass_turn()
             assert(next_state!=None)
             return next_state
-        if action in self.check_possible_moves():# or action == (-1,-1):
+        if action in self.empty_positions:# or action == (-1,-1):
             i,j = action
             next_board = deepcopy(self.board)
             next_board[i][j] = self.turn
