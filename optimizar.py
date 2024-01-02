@@ -28,7 +28,7 @@ def labelmaking(game,list,winner):
     for tag in list:
         file=f'{game.name}/{len(game.board)}/datasets/labels/{tag}.txt'
         with open(file, 'w') as f:
-            f.write(winner)
+            f.write(str(winner))
 
 def train(game):
     x,y=create_train_set(game)

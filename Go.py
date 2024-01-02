@@ -31,6 +31,7 @@ class GameState:
     def move(self, action):         # placing a piece on the board
         if action == (-1,-1):
             next_state = self.pass_turn()
+            assert(next_state!=None)
             return next_state
         if action in self.check_possible_moves():# or action == (-1,-1):
             i,j = action
@@ -70,8 +71,8 @@ class GameState:
         return False
         
     def pass_turn(self):        # a player chooses to "pass"
-        next_previous_boards = deepcopy(self.previous_boards)
-        next_previous_boards[self.turn] = deepcopy(self.board)
+        next_previous_boards = self.previous_boards
+        next_previous_boards[self.turn] = self.board
         next_state = GameState(self.board,-self.turn,self.play_idx+1,self.pass_count+1,next_previous_boards,self.empty_positions,parent=self)
         return next_state
             
@@ -146,6 +147,8 @@ def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method
     return board, empty_positions   # returning the new board and the new empty positions list
 
 def is_move_valid(state: GameState,move):
+    if move==(-1,-1):
+        return True
     i,j=move
     return (i,j) in state.check_possible_moves()
     
@@ -320,10 +323,11 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
     labellist=[]
     p=1
     while game.end==0:
-        if p==5:
-            turn=switchPlayer(turn)
-            continue
-        if turn==1:
+        if p>=5:
+            print(p)
+            action=(-1,-1)
+            p=1
+        elif turn==1:
             action,policy = alphai.play()
         else:
             action,policy = alphas.play()
@@ -346,7 +350,7 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
          # to display the winner
     if game.end != 0:
         if sp:
-            optimizar.labelmaking(labellist,game.winner)
+            optimizar.labelmaking(game,labellist,game.winner)
         return game.winner
             
 def ask_board_size(inp=None):

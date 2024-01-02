@@ -21,7 +21,9 @@ class Neura:
         self.game=game
         self.res=len(game.board)
         self.build(self.res,self.nf)
-        if name==None:
+        if name=='acacio':
+            self.name='acacio'+game.name+str(len(game.board))+str(self.res)
+        elif name==None:
             self.name=names.get_last_name()+game.name+str(len(game.board))+str(self.res)
             self.net.save_weights(f'modelos/{game.name}/{str(len(game.board))}/{self.name}.h5')
         else:

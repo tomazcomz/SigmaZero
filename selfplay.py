@@ -23,7 +23,7 @@ def rmfiles(game):
 
 def sp(game):
     #game=makegame(games)
-    teta=Neura(game,name=get_best_name(game))
     for i in range(250):
+        teta=Neura(game,name='acacio')
         alpha=MCTS(game,ARGS,teta)
         winner=agent_v_agent(game,alpha,alpha,True)

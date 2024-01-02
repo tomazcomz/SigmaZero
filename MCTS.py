@@ -40,8 +40,6 @@ class Node:
         if not self.fully_expanded():
             return self
         selected = max(self.children, key=lambda child: self.ucb(child))
-        if selected is None:
-            return self
         return selected.select()
     
     def cpuct(self, visit_count): # defining cpuct according to paper
@@ -61,13 +59,12 @@ class Node:
     def expand(self, p):
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
-            # if action in self.game_state.empty_positions:    # to avoid 'NoneType' error
-            next_state = self.game_state.move(action)
-            if next_state is None:  # to avoid 'NoneType' error
-                child = None
-            else:
+            if action in self.game_state.empty_positions or action==(-1,-1):    # to avoid 'NoneType' error
+                next_state = self.game_state.move(action)
+                if next_state==None:
+                    print(action)
                 child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
-            self.children.append(child)
+                self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -115,9 +112,9 @@ class MCTS:
         return  self.map[_]
     
     def cut(self,action):
-        child = self.root.children[self.map.index(action)]
-        if child is not None:
-            return child
+        for child in self.root.children:
+            if child.p_action==action:
+                self.root=child
 
     def printTree(self, node, level=0, prefix=""):
         if node is not None:
@@ -164,7 +161,7 @@ class MCTS:
         if self.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
-            temp=10**(-4)
+            temp=10**(-2)
 
         for child in self.root.children:
             if child is None:
