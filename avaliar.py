@@ -4,7 +4,7 @@ import Go
 import Attaxx
 
 ARGS = {
-    'cput': 1.5,
+    'cpuct': 1.5,
     'num_searches': 100
 }
 
@@ -30,31 +30,32 @@ def agent_v_agent(game,alphai,alphas,sp=False):
         return Attaxx.agent_v_agent(game,alphai,alphas,sp)
     return Go.agent_v_agent(game,alphai,alphas,sp)
 
-def avaliar(games,size):
+def avaliar(games):
     game=makegame(games)
     icount=0
     scount=0
     for i in range(40):
-        w=os.listdir(f'modelos/{games}/{size}')
-        for f in w:
-            iweights=f[:-3]
-            break
-        teta_i=Neura(game,name=iweights,n_resblocks=len(game.board))
+        teta_i=Neura(game,name=get_best_name(game))
         teta_i.compilar()
-        alpha_i=MCTS(ARGS,teta_i,True)
-        teta_s=Neura(game,name=get_best_name(game),n_resblocks=len(game.board))
+        alpha_i=MCTS(game,ARGS,teta_i,True)
+        teta_s=Neura(game,name='best/'+get_best_name(game))
         teta_s.compilar()
-        alpha_s=MCTS(ARGS,teta_s,True)
+        alpha_s=MCTS(game,ARGS,teta_s,True)
         match i%2:
             case 0:
                 winner=agent_v_agent(game,alpha_i,alpha_s)
+                if winner==1:
+                    icount+=1
+                else:
+                    scount+=1
             case 1:
                 winner=agent_v_agent(game,alpha_s,alpha_i,)
-        if winner==1:
-            icount+=1
-        else:
-            scount+=1
+                if winner==-1:
+                    icount+=1
+                else:
+                    scount+=1
     if icount>22:
-        alpha_i.make_best()
-    os.remove((f'modelos/{game.name}/{str(len(game.board))}/best/{iweights}.h5'))
+        teta_i.make_best()
+    os.remove((f'modelos/{game.name}/{str(len(game.board))}/{get_best_name()}.h5'))
+    teta_s.copy_weights(get_best_name(game))
             

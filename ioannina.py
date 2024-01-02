@@ -19,7 +19,8 @@ class Neura:
     def __init__(self,game,name=None):        # loss function and learning rate?
         self.input(game)
         self.game=game
-        self.res=len(game.board)
+        #self.res=len(game.board)
+        self.res=19
         self.build(self.res,self.nf)
         if name=='acacio':
             self.name='acacio'+game.name+str(len(game.board))+str(self.res)
@@ -90,14 +91,7 @@ class Neura:
         rnl2=layers.Activation(activation='softplus')(fcl)
         fcs=layers.Dense(1,kernel_regularizer=regularizers.L2(0.0001))(rnl2)
         tanh=layers.Activation(activation='tanh',name='valout')(fcs)
-        return tanh
-    
-    def loss(pival,polzed):
-        pol=np.array(polzed[0])
-        pit=np.transpose(np.array(pival[0]))
-        # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
-        # medium=(z-v)^2 -pi^T(dot)log(p)
-        return (polzed[1]-pival[1])**2-np.dot(pit,np.log(pol))
+        return tanh    
     
     def build(self,n_res,nf,):
         if self.game.type==0:
@@ -121,7 +115,7 @@ class Neura:
         return
     
     def compilar(self,lr=0.01):
-        self.net.compile(optimizer=optimizers.SGD(learning_rate=lr,momentum=0.9),loss=self.loss())
+        self.net.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr,momentum=0.9),loss={'polout':tf.keras.losses.CategoricalCrossentropy(),'valout':tf.keras.losses.MeanSquaredError()})
 
     def copy_weights(self,bestname):
         src=f'modelos/{self.game.name}/{str(len(self.game.board))}/best/{bestname}.h5'
@@ -148,6 +142,13 @@ def get_best_name(game):
         file_name = e
         break
     return file_name[:-3]
+
+def sigmaloss(y_true,y_pred):
+        pol=y_pred[0]
+        pit=np.transpose(np.array(y_true[0]))
+        # return sum over t (val(state(t))-z(t))^2 - pist(t) (dot) log(pol(state(t)))
+        # medium=(z-v)^2 -pi^T(dot)log(p)
+        return (y_pred[1]-y_true[1])**2-np.dot(pit,np.log(pol))
 
 
 '''------------------------------------  CUDA-RELATED  --------------------------------------------'''

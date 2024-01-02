@@ -3,18 +3,23 @@ import time
 from go.inputconverter import *
 import pickle
 
-def create_train_set(game,bs=250):
-    x,y=[],[]
+def create_train_set(game,bs=256):
+    x,yp,yv=[],[],[]
     # x <- board
     # y <- policy, label
     for i in range(bs):
-        boardfile=random.choice(os.listdir(f'{game.name}/{len(game.board)}/datasets/boards'))
-        bf=pickle.load(open(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile}', 'rb'))
-        pf=open(f'{game.name}/{len(game.board)}/datasets/policies/{boardfile}', 'r')
-        lf=open(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}', 'r')
+        boardfile=random.choice(os.listdir(f'{game.name}/{len(game.board)}/datasets/labels'))
+        bf=pickle.load(open(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile[:-3]}pkl', 'rb'))
+        pf=[]
+        with open(f'{game.name}/{len(game.board)}/datasets/policies/{boardfile}') as f:
+            for line in f:
+                pf.append(float(line.strip()))
+        pf=np.array(pf)
+        lf=np.loadtxt(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}',ndmin=1)
         x.append(bf)
-        y.append(pf, lf)
-    return x,y
+        yp.append(pf)
+        yv.append(lf)
+    return x,yp,yv
 
 
 def sptrainprocd(game,policy,alphaname):
@@ -31,9 +36,10 @@ def labelmaking(game,list,winner):
             f.write(str(winner))
 
 def train(game):
-    x,y=create_train_set(game)
+    x,yp,yv=create_train_set(game)
     rede=Neura(game,name=get_best_name(game))
     rede.compilar()
-    for i in range(1000):
-        history=rede.net.fit(x,y)
+    for i in range(10):
+        history=rede.net.fit(np.array(x),[np.array(yp),np.array(yv)],verbose=1,batch_size=8)
+        break
     rede.net.save_weights(f'modelos/{rede.game.name}/{str(len(rede.game.board))}/{rede.name}.h5')
