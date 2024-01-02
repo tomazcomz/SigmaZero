@@ -29,6 +29,9 @@ class GameState:
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self, action):         # placing a piece on the board
+        if action == (-1,-1):
+            next_state = self.pass_turn()
+            return next_state
         if action in self.check_possible_moves():# or action == (-1,-1):
             i,j = action
             next_board = deepcopy(self.board)

@@ -145,8 +145,6 @@ def get_best_name(game):
     for e in entries:
         file_name = e
         break
-    if file_name is None:
-        return None
     return file_name[:-3]
 
 
