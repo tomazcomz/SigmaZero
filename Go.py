@@ -321,6 +321,7 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
             action = alphai.play()
         else:
             action=alphas.play()
+        #print(action,' ',turn)
         if not is_move_valid(game,action):    # checks if move is valid
             continue    # if not, it expects another event from the same player
         turn = switchPlayer(turn)
@@ -328,12 +329,13 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
         if game.is_game_finished():
             game.end_game()
         if (sp):
-            fname=optimizar.sptrainprocd(game.board,alphas.name)
+            fname=optimizar.sptrainprocd(game.board,alphas.model.name)
             labellist.append(fname)
          # to display the winner
     if game.end != 0:
         if sp:
             optimizar.labelmaking(labellist,game.winner)
+        print(game.winner)
         return game.winner
             
 def ask_board_size(inp=None):

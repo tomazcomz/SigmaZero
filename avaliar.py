@@ -5,7 +5,7 @@ import Attaxx
 
 ARGS = {
     'cput': 1.5,
-    'num_searches': 1600
+    'num_searches': 1000
 }
 
 

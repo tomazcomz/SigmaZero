@@ -148,7 +148,7 @@ class MCTS:
                 else:
                     board=node.game_state.board
                 #print('convert ',time.time())
-                p, v = self.model.net.predict(np.array([board]),batch_size=1)
+                p, v = self.model.net.predict(np.array([board]),batch_size=1,verbose=0)
                 #print('depois ',time.time(),' ',_)
                 p=p[0]
                 v=v[0][0]
@@ -161,7 +161,7 @@ class MCTS:
             node.backprop(v)
         #print('fim ',time.time())
         
-        self.printTree(self.root)
+        #self.printTree(self.root)
 
         if self.play_idx-1<=self.ti and not self.evaluate:
             temp=1
@@ -173,7 +173,7 @@ class MCTS:
                 self.pi[self.map.index(child.p_action)] = 0
             else: 
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
-        print(self.pi)
+        #print(self.pi)
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
             self.play_idx+=1
@@ -181,7 +181,7 @@ class MCTS:
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.cut(played) # new root node is the child corresponding to the played action
-            self.printTree(self.root)
+            #self.printTree(self.root)
             print(f"Play chosen: {played}")
             self.play_idx+=1
             return played

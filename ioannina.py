@@ -16,10 +16,10 @@ Train:
 
 """
 class Neura:
-    def __init__(self,game,name=None,n_resblocks=19):        # loss function and learning rate?
+    def __init__(self,game,name=None):        # loss function and learning rate?
         self.input(game)
         self.game=game
-        self.res=n_resblocks
+        self.res=len(game.board)
         self.build(self.res,self.nf)
         if name==None:
             self.name=names.get_last_name()+game.name+str(len(game.board))+str(self.res)
@@ -150,12 +150,12 @@ def get_best_name(game):
 '''------------------------------------  CUDA-RELATED  --------------------------------------------'''
 def exports():   
     # Set CUDA and CUPTI paths  
-    os.environ['CUDA_HOME'] = '/tomazcomz/local/cuda'
-    os.environ['PATH']= '/tomazcomz/local/cuda/bin:$PATH'  
-    os.environ['CPATH'] = '/tomazcomz/local/cuda/include:$CPATH'  
-    os.environ['LIBRARY_PATH'] = '/tomazcomz/local/cuda/lib64:$LIBRARY_PATH'  
-    os.environ['LD_LIBRARY_PATH'] = '/tomazcomz/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH'  
-    os.environ['LD_LIBRARY_PATH'] = '/tomazcomz/local/cuda/lib64:$LD_LIBRARY_PATH'
+    os.environ['CUDA_HOME'] = '/usr/local/cuda'
+    os.environ['PATH']= '/usr/local/cuda/bin:$PATH'  
+    os.environ['CPATH'] = '/usr/local/cuda/include:$CPATH'  
+    os.environ['LIBRARY_PATH'] = '/usr/local/cuda/lib64:$LIBRARY_PATH'  
+    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH'  
+    os.environ['LD_LIBRARY_PATH'] = '/usr/local/cuda/lib64:$LD_LIBRARY_PATH'
 
 def opts():
     os.environ['CUDA_CACHE_DISABLE'] = '0'                  # disable caching

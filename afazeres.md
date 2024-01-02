@@ -38,12 +38,8 @@
 
 
 # É Preciso Fazer:
-    - remover weights best e não best
-    - o resto
-    - Score Modelo - a
+    - FUnção que mapeie tabuleiros menors que 6x6 no attaxx para 6x6 (não urgente) 
 
 # A testar:
-    - MCTS debugging
     - loss
-    - Guardar melhor modelo e etcs
     - guardar MCTS policy para treino

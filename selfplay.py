@@ -7,17 +7,23 @@ import Go,Attaxx
 
 ARGS = {
     'cpuct': 1.5,
-    'num_searches': 1600
+    'num_searches': 1000
 }
 
-def selfplay(game):
+
+def rmfiles(game):
+    for i in range(25000):
+        w=os.listdir(f'{game.name}/{len(game.board)}/datasets/boards')
+        for f in w:
+            boardfile=f
+            break
+        os.remove(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile}')
+        os.remove(f'{game.name}/{len(game.board)}/datasets/policies/{boardfile}')
+        os.remove(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}')
+
+def sp(game):
     #game=makegame(games)
-    w=os.listdir(f'modelos/{game.name}/{len(game.board)}/best')
-    for f in w:
-        sweights=f
-        break
-    teta=Neura(game)
-    teta.net.load_weights(sweights)
-    for i in range(250000):
+    teta=Neura(game,name=get_best_name(game))
+    for i in range(25000):
         alpha=MCTS(game,ARGS,teta)
         winner=agent_v_agent(game,alpha,alpha,True)
