@@ -29,15 +29,15 @@ class GameState:
         self.end = 0             # indicates if the game has ended ({0,1})
         
     def move(self, action):         # placing a piece on the board
-        if action in self.check_possible_moves() or action == (-1,-1):
+        if action in self.check_possible_moves():# or action == (-1,-1):
             i,j = action
             next_board = deepcopy(self.board)
             next_board[i][j] = self.turn
             next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
             next_previous_boards = self.previous_boards
             next_previous_boards[self.turn] = next_board
-            if action!=(-1,-1):
-                next_empty_positions.remove(action)
+            # if action!=(-1,-1):
+            next_empty_positions.remove(action)
             next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
             return next_state
         return None
