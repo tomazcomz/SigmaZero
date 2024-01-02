@@ -119,6 +119,21 @@ class MCTS:
             print(" " * level * 2 + f"{prefix}+- action: {node.p_action}, N: {node.visit_count}, W: {node.total_action_value}")
             for i, child in enumerate(node.children):
                 self.printTree(child, level + 1, f"{prefix}|  " if i < len(node.children) - 1 else f"{prefix}   ")
+
+    def get_play(self,passe=None):
+        max_val=0
+        ind=[]
+        for i in range(len(self.pi)):
+            if i==passe:
+                continue
+            val=self.pi[i]
+            if val>max_val:
+                ind=[i]
+                max_val=self.pi[i]
+                continue
+            if val==max_val:
+                ind.append(i)
+        return random.choice(ind)
     
     def play(self):
         #print('antes ',time.time())
@@ -145,8 +160,7 @@ class MCTS:
                 #print('depois ',time.time(),' ',_)
                 p=p[0]
                 v=v[0][0]
-                if self.game_state.play_idx-1>self.ti or self.evaluate:
-                    p=0.75*p+0.25*0.03 # adding Dirichlet noise to root's prior 
+                p=0.75*p+0.25*np.random.dirichlet([0.2])[0] # adding Dirichlet noise to root's prior 
                 node.expand(p) # adding children with policy from the NN to list children
             
 
@@ -160,18 +174,28 @@ class MCTS:
             temp=1
         else:
             temp=10**(-2)
-            temp=10**(-2)
 
         for child in self.root.children:
             if child is None:
                 continue
-            if child.visit_count == 0 or child.visit_count == 1:
+            if child.visit_count == 0:
                 self.pi[self.map.index(child.p_action)] = 0
+            elif child.visit_count == 1:
+                self.pi[self.map.index(child.p_action)] = 0.1
             else: 
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
-        #print(self.pi)
+        #print(self.pi[0])
         pol=self.pi
-        max_prob_index = np.argmax(self.pi)
+        if temp==1:
+            max_prob_index=self.get_play()
+        else:
+            max_prob_index=self.get_play()
+            played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))
+            if played in self.game_state.empty_positions:
+                pass
+            else:
+                max_prob_index=self.get_play(max_prob_index)
+        #max_prob_index = np.random.choice(len(self.pi),self.pi)[0]
         if max_prob_index == self.game_state.n**2:
             self.play_idx+=1
             return (-1, -1)     # definir isto como "pass"
@@ -179,6 +203,6 @@ class MCTS:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.cut(played) # new root node is the child corresponding to the played action
             #self.printTree(self.root)
-            #print(f"Play chosen: {played}")
+            print(f"Play chosen: {played}")
             self.play_idx+=1
             return played,pol
