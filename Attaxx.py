@@ -309,6 +309,30 @@ def jogo_Agente_Agente(game, alphai, alphas, sp=False):
             optimizar.labelmaking(labellist,game.end)
         return game.end
 
+def convert_to_six_by_six(board):
+        if len(board) == 4:
+            newboard = [[8,8,8,8,8,8]]
+            for i in range(len(board)):
+                line = [8]
+                for j in range(len(board)):
+                    line.append(board[i][j])
+                line.append(8)
+                newboard.append(line)
+            newboard.append([8,8,8,8,8,8])
+            return newboard
+        elif len(board) == 5:
+            newboard=[]
+            for i in range(len(board)):
+                line = [8]
+                for j in range(len(board)):
+                    line.append(board[i][j])
+                newboard.append(line)
+            newboard.append([8,8,8,8,8,8])
+            return newboard
+        else:
+            return board
+     
+
 
 def objective_test(game: GameState,player):   # atualizar count (com GUI)
     gamenp=np.array(game.board)
@@ -365,8 +389,7 @@ def chooseBoard(tableNum=None):
             tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n4) 4x4\n6) 6x6\nTabuleiro: ")
         table = "attaxx/tab"+tableNum+".txt"
         return table
-    
-    
+   
 if __name__ == "__main__":
     start_time = time.time()
     table = chooseBoard()
