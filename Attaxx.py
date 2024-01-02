@@ -63,13 +63,10 @@ class GameState:
         return possible_moves
     
     def is_game_finished(self):
-        if self.pass_count == 2:    # game ends if both players consecutively pass
-            print("Reason for game ending: 2 passes in a row")
-            return True
-        if self.play_idx >= (self.n**2)*2:    # game ends if n*n*2 plays have occurred
-            print(f"Reason for game ending: the limit of {self.n**2} plays was exceeded")
-            return True
-        return False
+        is_finished,_,_ = _objective_test(self,self.player_id)
+        if is_finished  == -2:
+            return False
+        return True
     
 
 def final_move(game,board,play,player):     #### função que verifica se o estado não tem children
