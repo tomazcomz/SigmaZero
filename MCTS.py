@@ -40,8 +40,8 @@ class Node:
         if not self.fully_expanded():
             return self
         selected = max(self.children, key=lambda child: self.ucb(child))
-        if selected is None:
-            return self
+        # if selected is None:
+        #     return self
         return selected.select()
     
     def cpuct(self, visit_count): # defining cpuct according to paper
@@ -61,13 +61,13 @@ class Node:
     def expand(self, p):
         for _ in range(self.possible):
             action=self.mcts.get_act(_)
-            # if action in self.game_state.empty_positions:    # to avoid 'NoneType' error
-            next_state = self.game_state.move(action)
-            if next_state is None:  # to avoid 'NoneType' error
-                child = None
-            else:
+            if action in self.game_state.empty_positions:    # to avoid 'NoneType' error
+                next_state = self.game_state.move(action)
+                # if next_state is None:  # to avoid 'NoneType' error
+                #     child = None
+                # else:
                 child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
-            self.children.append(child)
+                self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -164,7 +164,7 @@ class MCTS:
         if self.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
-            temp=10**(-4)
+            temp=10**(-2)
 
         for child in self.root.children:
             if child is None:
@@ -182,7 +182,7 @@ class MCTS:
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.cut(played) # new root node is the child corresponding to the played action
-            #self.printTree(self.root)
+            self.printTree(self.root)
             #print(f"Play chosen: {played}")
             self.play_idx+=1
             return played,pol
