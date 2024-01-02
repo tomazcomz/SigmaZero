@@ -265,7 +265,7 @@ def jogo_Humano_Humano(game, screen):
                     #fazer o movimento da jogada
                     elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
                         targetCell = mousePos(game)
-                        game = move(game, coord, targetCell, selected, player_id)
+                        game = moveGUI(game, coord, targetCell, selected, player_id)
                         player_id = game.player_id
                         clickState=False
                         drawBoard(game, screen)
