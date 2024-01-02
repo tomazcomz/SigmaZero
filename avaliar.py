@@ -5,7 +5,7 @@ import Attaxx
 
 ARGS = {
     'cput': 1.5,
-    'num_searches': 1000
+    'num_searches': 100
 }
 
 
@@ -34,7 +34,7 @@ def avaliar(games,size):
     game=makegame(games)
     icount=0
     scount=0
-    for i in range(400):
+    for i in range(40):
         w=os.listdir(f'modelos/{games}/{size}')
         for f in w:
             iweights=f[:-3]
@@ -54,7 +54,7 @@ def avaliar(games,size):
             icount+=1
         else:
             scount+=1
-    if icount>220:
+    if icount>22:
         alpha_i.make_best()
     os.remove((f'modelos/{game.name}/{str(len(game.board))}/best/{iweights}.h5'))
             

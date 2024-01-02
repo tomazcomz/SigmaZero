@@ -40,7 +40,6 @@ class GameState:
                 next_empty_positions.remove(action)
             next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
             return next_state
-        print(action)
         return None
     
     def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
@@ -316,26 +315,35 @@ def human_v_human(game: GameState, screen):    # main method that runs a human v
 def agent_v_agent(game: GameState, alphai, alphas, sp=False):
     turn = 1
     labellist=[]
+    p=1
     while game.end==0:
+        if p==5:
+            turn=switchPlayer(turn)
+            continue
         if turn==1:
-            action = alphai.play()
+            action,policy = alphai.play()
         else:
-            action=alphas.play()
+            action,policy = alphas.play()
         #print(action,' ',turn)
-        if not is_move_valid(game,action):    # checks if move is valid
+        if not is_move_valid(game,action):
+            p+=1    # checks if move is valid
             continue    # if not, it expects another event from the same player
+        if turn==1:
+            alphas.cut(action)
+        else:
+            alphai.cut(action)
         turn = switchPlayer(turn)
-        game = game.move(action)    
+        game = game.move(action)
+        print(game.board)    
         if game.is_game_finished():
             game.end_game()
         if (sp):
-            fname=optimizar.sptrainprocd(game.board,alphas.model.name)
+            fname=optimizar.sptrainprocd(game,policy,alphas.model.name)
             labellist.append(fname)
          # to display the winner
     if game.end != 0:
         if sp:
             optimizar.labelmaking(labellist,game.winner)
-        print(game.winner)
         return game.winner
             
 def ask_board_size(inp=None):

@@ -174,6 +174,7 @@ class MCTS:
             else: 
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
         #print(self.pi)
+        pol=self.pi
         max_prob_index = np.argmax(self.pi)
         if max_prob_index == self.game_state.n**2:
             self.play_idx+=1
@@ -182,6 +183,6 @@ class MCTS:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.cut(played) # new root node is the child corresponding to the played action
             #self.printTree(self.root)
-            print(f"Play chosen: {played}")
+            #print(f"Play chosen: {played}")
             self.play_idx+=1
-            return played
+            return played,pol

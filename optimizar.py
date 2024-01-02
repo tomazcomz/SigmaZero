@@ -3,7 +3,7 @@ import time
 from go.inputconverter import *
 import pickle
 
-def create_train_set(game,bs=2048):
+def create_train_set(game,bs=250):
     x,y=[],[]
     # x <- board
     # y <- policy, label

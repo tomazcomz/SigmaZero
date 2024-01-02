@@ -7,12 +7,12 @@ import Go,Attaxx
 
 ARGS = {
     'cpuct': 1.5,
-    'num_searches': 1000
+    'num_searches': 100
 }
 
 
 def rmfiles(game):
-    for i in range(25000):
+    for i in range(250):
         w=os.listdir(f'{game.name}/{len(game.board)}/datasets/boards')
         for f in w:
             boardfile=f
@@ -24,6 +24,6 @@ def rmfiles(game):
 def sp(game):
     #game=makegame(games)
     teta=Neura(game,name=get_best_name(game))
-    for i in range(25000):
+    for i in range(250):
         alpha=MCTS(game,ARGS,teta)
         winner=agent_v_agent(game,alpha,alpha,True)
