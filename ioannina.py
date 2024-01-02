@@ -141,9 +141,12 @@ class Neura:
 def get_best_name(game):
     folder_path = f"modelos/{game.name}/{len(game.board)}/best"
     entries = os.listdir(folder_path)
+    file_name = None
     for e in entries:
         file_name = e
         break
+    if file_name is None:
+        return None
     return file_name[:-3]
 
 
