@@ -22,7 +22,7 @@ def rmfiles(game):
         os.remove(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}')
 
 def sp(game):
-    teta=Neura(game,name=get_best_name())   
+    teta=Neura(game,name=get_best_name(game))   
     for i in range(250):
         #teta=Neura(game,name='acacio')   # comentar isto
         alpha=MCTS(game,ARGS,teta)
