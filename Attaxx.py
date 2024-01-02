@@ -265,7 +265,7 @@ def jogo_Humano_Humano(game, screen):
                     #fazer o movimento da jogada
                     elif event.type == pygame.MOUSEBUTTONDOWN and clickState == True:
                         targetCell = mousePos(game)
-                        game = move(game, coord, targetCell, selected, player_id)
+                        game = moveGUI(game, coord, targetCell, selected, player_id)
                         player_id = game.player_id
                         clickState=False
                         drawBoard(game, screen)
@@ -291,9 +291,9 @@ def jogo_Agente_Agente(game, alphai, alphas, sp=False):
     labellist=[]
     while game.end==-2:
         if player_id==1:
-            action = alphai.play()
+            action = coord_to_move(game,alphai.play())
         else:
-            action=alphas.play()
+            action=coord_to_move(game,alphas.play())
         if action not in game.check_possible_moves():    # checks if move is valid
             continue    # if not, it expects another event from the same player
         player_id = -player_id
@@ -331,8 +331,15 @@ def convert_to_six_by_six(board):
             return newboard
         else:
             return board
-     
 
+def coord_to_move(game, targetCell):
+       possible_origins = set()
+       for move in game.check_possible_moves():
+            if move[1]==targetCell:
+                possible_origins.add(move[0])
+                if abs(move[0][0]-targetCell[0])==1 or abs(move[0][1]-targetCell[1])==1:
+                    return (move[0],targetCell)
+       return (possible_origins.pop(),targetCell)
 
 def objective_test(game: GameState,player):   # atualizar count (com GUI)
     gamenp=np.array(game.board)
