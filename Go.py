@@ -33,18 +33,17 @@ class GameState:
             next_state = self.pass_turn()
             assert(next_state!=None)
             return next_state
-        if action in self.empty_positions:# or action == (-1,-1):
-            i,j = action
-            next_board = deepcopy(self.board)
-            next_board[i][j] = self.turn
-            next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
-            next_previous_boards = self.previous_boards
-            next_previous_boards[self.turn] = next_board
+        #if action in self.empty_positions:# or action == (-1,-1):
+        i,j = action
+        next_board = deepcopy(self.board)
+        next_board[i][j] = self.turn
+        next_board, next_empty_positions = check_for_captures(i,j,next_board, self.turn, self.empty_positions)
+        next_previous_boards = self.previous_boards
+        next_previous_boards[self.turn] = next_board
             # if action!=(-1,-1):
-            next_empty_positions.remove(action)
-            next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
-            return next_state
-        return None
+        next_empty_positions.remove(action)
+        next_state = GameState(next_board,-self.turn,self.play_idx+1,0,next_previous_boards,next_empty_positions,parent=self)
+        return next_state
     
     def check_possible_moves(self):   # returns all empty positions, excluding the ones that would violate the positional superko rule and the ones that would result in suicide
         possible_moves = deepcopy(self.empty_positions)
