@@ -12,12 +12,12 @@ ARGS = {
 
 
 def rmfiles(game):
-    for i in range(250):
+    for i in range(1000):
         w=os.listdir(f'{game.name}/{len(game.board)}/datasets/labels')
         for f in w:
             boardfile=f
             break
-        os.remove(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile}')
+        os.remove(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile[:-3]}pkl')
         os.remove(f'{game.name}/{len(game.board)}/datasets/policies/{boardfile}')
         os.remove(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}')
 
