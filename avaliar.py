@@ -35,7 +35,7 @@ def avaliar(games):
     icount=0
     scount=0
     for i in range(40):
-        if scount>=10 and icount==0:
+        if scount>=icount+10:
             break
         teta_i=Neura(game,name=get_best_name(game))
         teta_i.compilar()
@@ -43,6 +43,7 @@ def avaliar(games):
         teta_s=Neura(game,name='best/'+get_best_name(game))
         teta_s.compilar()
         alpha_s=MCTS(game,ARGS,teta_s,True)
+        break
         match i%2:
             case 0:
                 winner=agent_v_agent(game,alpha_i,alpha_s)
