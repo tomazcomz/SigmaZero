@@ -113,6 +113,7 @@ class MCTS:
         for child in self.root.children:
             if child.p_action==action:
                 self.root=child
+                self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
 
     def printTree(self, node, level=0, prefix=""):
         if node is not None:
@@ -163,7 +164,6 @@ class MCTS:
                 p=0.75*p+0.25*np.random.dirichlet([0.2])[0] # adding Dirichlet noise to root's prior 
                 node.expand(p) # adding children with policy from the NN to list children
             
-
             # backpropagate
             node.backprop(v)
         #print('fim ',time.time())
@@ -176,6 +176,7 @@ class MCTS:
             temp=10**(-2)
 
         for child in self.root.children:
+            # print(child.p_action)
             if child is None:
                 continue
             if child.visit_count == 0:
@@ -184,10 +185,10 @@ class MCTS:
                 self.pi[self.map.index(child.p_action)] = 0.1
             else: 
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
-        #print(self.pi[0])
+        
         pol=self.pi
         max_prob_index=self.get_play()
-        #max_prob_index = np.random.choice(len(self.pi),self.pi)[0]
+        
         if max_prob_index == self.game_state.n**2:
             self.play_idx+=1
             return (-1, -1)     # definir isto como "pass"
