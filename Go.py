@@ -131,7 +131,7 @@ class GameState:
 # auxiliar methods to implement Go's game logic
 def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method that checks for captures, given a board and a turn, and returns the new board
     player_checked = -turn   # the player_checked will have its pieces scanned and evaluated if they're captured or not
-    empty_positions = deepcopy(empty_positions)
+    new_empty_positions = deepcopy(empty_positions)
     n = len(board)
     positions_to_be_checked = [(min(i+1,n-1),j),(i,min(j+1,n-1)),(max(i-1,0),j),(i,max(j-1,0))]
     for position in positions_to_be_checked:
@@ -142,8 +142,8 @@ def check_for_captures(i,j,board, turn, empty_positions:set = set()):   # method
         if captured_group is not None:
             for (x,y) in captured_group:
                 board[x][y] = 0    # updating the board after a capture
-                empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
-    return board, empty_positions   # returning the new board and the new empty positions list
+                new_empty_positions.add((x,y))   # adding the territory of the captured piece as an empty position
+    return board, new_empty_positions   # returning the new board and the new empty positions list
 
 def is_move_valid(state: GameState,move):
     if move==(-1,-1):
@@ -340,6 +340,7 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
             alphai.cut(action)
         turn = switchPlayer(turn)
         game = game.move(action)
+        # print(game.empty_positions)
         print(game.board)    
         if game.is_game_finished():
             game.end_game()
