@@ -36,10 +36,10 @@ def labelmaking(game,list,winner):
             f.write(str(winner))
 
 def train(game):
-    x,yp,yv=create_train_set(game)
     rede=Neura(game,name=get_best_name(game))
     rede.compilar()
     for i in range(10):
+        x,yp,yv=create_train_set(game)
         history=rede.net.fit(np.array(x),[np.array(yp),np.array(yv)],verbose=1,batch_size=8)
         break
     rede.net.save_weights(f'modelos/{rede.game.name}/{str(len(rede.game.board))}/{rede.name}.h5')

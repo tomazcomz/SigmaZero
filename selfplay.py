@@ -13,7 +13,7 @@ ARGS = {
 
 def rmfiles(game):
     for i in range(250):
-        w=os.listdir(f'{game.name}/{len(game.board)}/datasets/boards')
+        w=os.listdir(f'{game.name}/{len(game.board)}/datasets/labels')
         for f in w:
             boardfile=f
             break
@@ -23,7 +23,7 @@ def rmfiles(game):
 
 def sp(game):
     teta=Neura(game,name=get_best_name(game))   
-    for i in range(250):
+    for i in range(50):
         #teta=Neura(game,name='acacio')   # comentar isto
         alpha=MCTS(game,ARGS,teta)
         winner=agent_v_agent(game,alpha,alpha,True)

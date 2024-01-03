@@ -188,10 +188,9 @@ class MCTS:
         
         pol=self.pi
         max_prob_index=self.get_play()
-        
         if max_prob_index == self.game_state.n**2:
             self.play_idx+=1
-            return (-1, -1)     # definir isto como "pass"
+            return (-1, -1),pol     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
             self.cut(played) # new root node is the child corresponding to the played action
