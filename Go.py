@@ -334,6 +334,7 @@ def agent_v_agent(game: GameState, alphai, alphas, sp=False):
         if not is_move_valid(game,action):
             p+=1    # checks if move is valid
             continue    # if not, it expects another event from the same player
+        p=0
         if turn==1:
             alphas.cut(action)
         else:

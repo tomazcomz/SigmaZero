@@ -186,15 +186,7 @@ class MCTS:
                 self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
         #print(self.pi[0])
         pol=self.pi
-        if temp==1:
-            max_prob_index=self.get_play()
-        else:
-            max_prob_index=self.get_play()
-            played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))
-            if played in self.game_state.empty_positions:
-                pass
-            else:
-                max_prob_index=self.get_play(max_prob_index)
+        max_prob_index=self.get_play()
         #max_prob_index = np.random.choice(len(self.pi),self.pi)[0]
         if max_prob_index == self.game_state.n**2:
             self.play_idx+=1
