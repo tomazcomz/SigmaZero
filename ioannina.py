@@ -94,16 +94,10 @@ class Neura:
         return tanh    
     
     def build(self,n_res,nf,):
-        if self.game.type==0:
-            conv=self.convblock3(self.inpt,nf)
-            restower=conv
-            for i in range(n_res):
-                restower=self.resblock3(restower,i,nf)
-        else:
-            conv=self.convblock(self.inpt,nf)
-            restower=conv
-            for i in range(n_res):
-                restower=self.resblock(restower,i,nf)
+        conv=self.convblock(self.inpt,nf)
+        restower=conv
+        for i in range(n_res):
+            restower=self.resblock(restower,i,nf)
         polh=self.polhead(restower)
         valh=self.valhead(restower,nf)
         outputs=[polh,valh]
