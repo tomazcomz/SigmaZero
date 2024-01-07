@@ -21,7 +21,7 @@ nodes (positions/states)
 """
 
 class Node:
-    def __init__(self, game_state, args, mcts, parent=None, p_action=None, prior_prob=0):
+    def __init__(self, game_state, args, mcts, parent=None, p_action=None, prior_prob=0,play_idx=0):
         self.game_state=game_state
         self.args=args
         self.parent=parent
@@ -32,6 +32,7 @@ class Node:
         self.total_action_value=0   # W
         self.possible=self.game_state.n**2+self.game_state.type
         self.mcts=mcts
+        self.play_idx=play_idx
 
     def fully_expanded(self):
         return len(self.children)>0     # if no expandable moves and there are children
@@ -61,7 +62,7 @@ class Node:
             action=self.mcts.get_act(_)
             if action in self.game_state.empty_positions or action==(-1,-1):    # to avoid 'NoneType' error
                 next_state = self.game_state.move(action)
-                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
+                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts,play_idx=self.play_idx+1)
                 self.children.append(child)
     
     def backprop(self, v):
@@ -189,12 +190,11 @@ class MCTS:
         pol=self.pi
         max_prob_index=self.get_play()
         if max_prob_index == self.game_state.n**2:
-            self.play_idx+=1
+            self.cut((-1,-1))
             return (-1, -1),pol     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
-            self.cut(played) # new root node is the child corresponding to the played action
             #self.printTree(self.root)
             print(f"Play chosen: {played}")
-            self.play_idx+=1
+            self.cut(played) # new root node is the child corresponding to the played action
             return played,pol
