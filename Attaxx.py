@@ -21,13 +21,14 @@ class GameState:
         self.parent = None
         self.parentPlay = None  # (play, movtype)
         self.parentCell = None
+        self.n = len(board)
     
     def createChildren(self, player_id):
         differentPlayBoards = []
         for i in range(len(self.board)):
             for j in range(len(self.board)):
                 if self.board[j][i] == player_id:
-                    moves = get_moves(self, (i,j))
+                    moves = self.get_moves((i,j))
                     for mov in moves:
                         if moves[mov][0]:
                             newboard = cp.deepcopy(self.board)
@@ -51,15 +52,17 @@ class GameState:
 
     def check_possible_moves(self):
         possible_moves = set()    # each move is a tuple of coordinates ((initial_cell),(target_cell))
-        for i in len(self.board): 
-            for j in len(self.board): 
-                if self.board[i][j] != self.player_id:
+        for i in range(len(self.board)): 
+            for j in range(len(self.board)):
+                #print(f"{len(self.board)}x{len(self.board)} board with i,j: {i},{j}.")
+                if self.board[j][i] != self.player_id:
                     continue
-                moves_from_a_cell = get_moves(self,(i,j))
+                moves_from_a_cell = self.get_moves((i,j))
                 for move in moves_from_a_cell:
-                    if move[0]:
+                    if moves_from_a_cell[move][0]:
                         target_cell = (i+move[0],j+move[1])
-                        possible_moves.add(((i,j),target_cell))
+                        if ((target_cell[0]<6) and (target_cell[0]>=0) and (target_cell[1]<6) and (target_cell[1]>=0) and (self.board[target_cell[1]][target_cell[0]]==0)):
+                            possible_moves.add(((i,j),target_cell))
         return possible_moves
     
     def is_game_finished(self):
@@ -67,6 +70,50 @@ class GameState:
         if is_finished  == -2:
             return False
         return True
+    
+    def coord_to_move(self, targetCell):
+       possible_origins = set()
+       for move in self.check_possible_moves():
+            if move[1][0]==targetCell[0] and move[1][1]==targetCell[1]:
+                possible_origins.add(move[0])
+                if abs(move[0][0]-targetCell[0])==1 or abs(move[0][1]-targetCell[1])==1:
+                    return (move[0],targetCell)
+       if len(possible_origins) != 0:
+            return (possible_origins.pop(),targetCell)
+       return None
+    
+    def move(self,initialCell,targetCell,player_id):  # without GUI
+        newBoard = cp.deepcopy(self.board)
+        moves = self.get_moves(initialCell)
+        move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
+        move_type = moves[move][1]
+        if move_type == 1:
+            newBoard[targetCell[1]][targetCell[0]] = player_id
+            newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+        elif move_type == 2:
+            newBoard[targetCell[1]][targetCell[0]] = player_id
+            newBoard[initialCell[1]][initialCell[0]] = 0
+            newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+        newGame = GameState(newBoard, -player_id)
+        return newGame
+    
+    #i=y and j=x : tuples are (y,x)
+    def get_moves(self,cell):
+        vect = [(1,0),(2,0),(1,1),(2,2),(1,-1),(2,-2),(-1,0),(-2,0),(-1,1),(-2,-2),(0,1),(0,2),(0,-1),(0,-2),(-1,-1),(-2,2)]
+        #moves é um dicionario onde a chave de cada elemento é uma lista com a validade do mov (True/False) no indice 0 e o tipo de movimento no indice 1
+        moves={}
+        for mov in vect:
+            play=(cell[0]+mov[0],cell[1]+mov[1])
+            if play[0]<0 or play[0]>len(self.board)-1 or play[1]<0 or play[1]>len(self.board)-1 or self.board[play[1]][play[0]]!=0:
+                moves[mov]=[False]
+            else:
+                moves[mov]=[True]
+            if 1 in mov or -1 in mov:
+                moves[mov].append(1)
+            elif 2 in mov or -2 in mov:
+                moves[mov].append(2)
+        return moves
+
     
 
 def final_move(game,board,play,player):     #### função que verifica se o estado não tem children
@@ -87,24 +134,6 @@ def final_move(game,board,play,player):     #### função que verifica se o esta
             if count_o > count_p:
                 return (True,-player)
         return (True,0)
-    
-    #i=y and j=x : tuples are (y,x)
-def get_moves(game,cell):
-        vect = [(1,0),(2,0),(1,1),(2,2),(1,-1),(2,-2),(-1,0),(-2,0),(-1,1),(-2,-2),(0,1),(0,2),(0,-1),(0,-2),(-1,-1),(-2,2)]
-        #moves é um dicionario onde a chave de cada elemento é uma lista com a validade do mov (True/False) no indice 0 e o tipo de movimento no indice 1
-        moves={}
-        for mov in vect:
-            play=(cell[0]+mov[0],cell[1]+mov[1])
-            if play[0]<0 or play[0]>len(game.board)-1 or play[1]<0 or play[1]>len(game.board)-1 or game.board[play[1]][play[0]]!=0:
-                moves[mov]=[False]
-            else:
-                moves[mov]=[True]
-            if 1 in mov or -1 in mov:
-                moves[mov].append(1)
-            elif 2 in mov or -2 in mov:
-                moves[mov].append(2)
-        return moves
-
 
     #draws the board on screen
 def drawBoard(game: GameState, screen):
@@ -177,7 +206,7 @@ def showSelected(game: GameState, screen, coord, player_id):
             elif player_id == -1:
                 selectedCellRGB = (144,238,144) #verde claro
             pygame.draw.rect(screen, selectedCellRGB, (800*i/n + 2, 800*j/n + 2, 800/n - 2 , 800/n - 2))
-            moves=get_moves(game,coord)
+            moves=game.get_moves(coord)
             for mov in moves:
                 if moves[mov][0]:
                     play=(coord[0]+mov[0],coord[1]+mov[1])
@@ -223,21 +252,6 @@ def moveGUI(game, initialCell, targetCell, selectedType, player_id):   # used wh
                 newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
         newGame = GameState(newBoard, -player_id)
         return newGame
-
-def move(game: GameState,initialCell,targetCell,player_id):  # without GUI
-    newBoard = cp.deepcopy(game.board)
-    moves = get_moves(game,initialCell)
-    move = (targetCell[0]-initialCell[0], targetCell[1]-initialCell[1])
-    move_type = moves[move][1]
-    if move_type == 1:
-        newBoard[targetCell[1]][targetCell[0]] = player_id
-        newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
-    elif move_type == 2:
-        newBoard[targetCell[1]][targetCell[0]] = player_id
-        newBoard[initialCell[1]][initialCell[0]] = 0
-        newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
-    newGame = GameState(newBoard, -player_id)
-    return newGame
 
 
     #game mode Human vs Human
@@ -286,18 +300,25 @@ def jogo_Humano_Humano(game, screen):
                 pygame.display.update()
             pygame.display.update()
 
-def jogo_Agente_Agente(game, alphai, alphas, sp=False):
+def agent_v_agent(game, alphai, alphas, sp=False):
+    game_size = random.choice([4, 5])
+    game = readBoard(chooseBoard(tableNum=game_size))
+    game.board = convert_to_six_by_six(game.board)
     player_id = 1
     labellist=[]
     while game.end==-2:
         if player_id==1:
-            action = coord_to_move(game,alphai.play())
+            print("PLAYER 1 TURN")
+            action = game.coord_to_move(alphai.play()[0])
         else:
-            action=coord_to_move(game,alphas.play())
+            print("PLAYER 2 TURN")
+            action = game.coord_to_move(alphas.play()[0])
+        print(game.check_possible_moves())
+        print(action in game.check_possible_moves())
         if action not in game.check_possible_moves():    # checks if move is valid
             continue    # if not, it expects another event from the same player
         player_id = -player_id
-        game = move(game, action[0], action[1], player_id)
+        game = game.move(action[0], action[1], player_id)
         if game.is_game_finished():
             game.end=objective_test(game, player_id)
         if (sp):
@@ -331,15 +352,6 @@ def convert_to_six_by_six(board):
             return newboard
         else:
             return board
-
-def coord_to_move(game, targetCell):
-       possible_origins = set()
-       for move in game.check_possible_moves():
-            if move[1]==targetCell:
-                possible_origins.add(move[0])
-                if abs(move[0][0]-targetCell[0])==1 or abs(move[0][1]-targetCell[1])==1:
-                    return (move[0],targetCell)
-       return (possible_origins.pop(),targetCell)
 
 def objective_test(game: GameState,player):   # atualizar count (com GUI)
     gamenp=np.array(game.board)
@@ -394,9 +406,9 @@ def chooseBoard(tableNum=None):
         #todos os ficheiros com tabuleiros devem ter nome do tipo "tabX.txt"
         if tableNum==None:
             tableNum = input("Escolha o número do tabuleiro que quer usar para o jogo!\n4) 4x4\n6) 6x6\nTabuleiro: ")
-        table = "attaxx/tab"+tableNum+".txt"
+        table = f"attaxx/tab{tableNum}.txt"
         return table
-   
+'''   
 if __name__ == "__main__":
     start_time = time.time()
     table = chooseBoard()
@@ -405,9 +417,11 @@ if __name__ == "__main__":
     game = readBoard(table)
     drawBoard(game, screen)
     jogo_Humano_Humano(game, screen)
-    print("--- %.5f seconds ---" % (time.time() - start_time))
+    print("--- %.5f seconds ---" % (time.time() - start_time))'''
 
-def create(size=None):
-    table = chooseBoard(size)
-    game = readBoard(table)
+def create():
+    game_size = random.choice([4, 5, 6])
+    game = readBoard(chooseBoard(tableNum=game_size))
+    game.board = convert_to_six_by_six(game.board)
+    print(f"GAME SIZE: {game_size}")
     return game

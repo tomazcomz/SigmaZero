@@ -12,18 +12,18 @@ ARGS = {
 
 
 def rmfiles(game):
-    for i in range(1000):
+    for i in range(250):
         w=os.listdir(f'{game.name}/{len(game.board)}/datasets/labels')
         for f in w:
             boardfile=f
             break
-        os.remove(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile[:-3]}pkl')
+        os.remove(f'{game.name}/{len(game.board)}/datasets/boards/{boardfile}')
         os.remove(f'{game.name}/{len(game.board)}/datasets/policies/{boardfile}')
         os.remove(f'{game.name}/{len(game.board)}/datasets/labels/{boardfile}')
 
 def sp(game):
-    teta=Neura(game,name=get_best_name(game))   
+    #teta=Neura(game,name=get_best_name(game))   
     for i in range(50):
-        #teta=Neura(game,name='acacio')   # comentar isto
+        teta=Neura(game,name='acacio')   # comentar isto
         alpha=MCTS(game,ARGS,teta)
         winner=agent_v_agent(game,alpha,alpha,True)

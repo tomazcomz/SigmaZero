@@ -10,12 +10,8 @@ ARGS = {
 
 
 def makegame(games: str): # creates gamestate
-    if games=='A4x4':
-        estado = Attaxx.create('4')       
-    elif games=='A5x5':
-        estado = Attaxx.create('5') 
-    elif games=='A6x6':
-        estado = Attaxx.create('6') 
+    if games=='A6x6':
+        estado = Attaxx.create()
     elif games=='G7x7':
         initial_board = np.zeros((7, 7),dtype=int)  
         estado = Go.GameState(initial_board)
@@ -35,8 +31,6 @@ def avaliar(games):
     icount=0
     scount=0
     for i in range(40):
-        if scount>=(icount+10):
-            break
         teta_i=Neura(game,name=get_best_name(game))
         teta_i.compilar()
         alpha_i=MCTS(game,ARGS,teta_i,True)
@@ -56,9 +50,8 @@ def avaliar(games):
                     icount+=1
                 else:
                     scount+=1
-        print(icount)
     if icount>22:
         teta_i.make_best()
-    os.remove((f'modelos/{game.name}/{str(len(game.board))}/{get_best_name(game)}.h5'))
+    os.remove((f'modelos/{game.name}/{str(len(game.board))}/{get_best_name()}.h5'))
     teta_s.copy_weights(get_best_name(game))
-    return icount
+            

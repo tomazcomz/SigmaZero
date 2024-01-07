@@ -113,7 +113,7 @@ class Neura:
 
     def copy_weights(self,bestname):
         src=f'modelos/{self.game.name}/{str(len(self.game.board))}/best/{bestname}.h5'
-        dest=f'modelos/{self.game.name}/{str(len(self.game.board))}/{bestname}.h5'
+        dest=f'modelos/{self.game.name}/{str(len(self.game.board))}/{self.name}.h5'
         copy(src, dest)
     
     def make_best(self):

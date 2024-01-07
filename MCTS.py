@@ -30,8 +30,20 @@ class Node:
         self.children=[]
         self.visit_count=0   # N
         self.total_action_value=0   # W
-        self.possible=self.game_state.n**2+self.game_state.type
+        self.possible=self._possible()
         self.mcts=mcts
+
+    def _possible(self):
+        if self.game_state.name=='go':
+            return self.game_state.n**2+1
+        else:
+            if self.game_state.board[0][0] != 8:
+                return self.game_state.n**2 - 4
+            else:
+                if self.game_state.board[0][1] == 8:
+                    return self.game_state.n**2 - 24
+                else:
+                    return self.game_state.n**2 - 14
 
     def fully_expanded(self):
         return len(self.children)>0     # if no expandable moves and there are children
@@ -57,12 +69,23 @@ class Node:
     
 
     def expand(self, p):
-        for _ in range(self.possible):
-            action=self.mcts.get_act(_)
-            if action in self.game_state.empty_positions or action==(-1,-1):    # to avoid 'NoneType' error
-                next_state = self.game_state.move(action)
-                child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[_],mcts=self.mcts)
-                self.children.append(child)
+        k=0
+        while k < self.possible:
+            for i in range(self.game_state.n**2+self.game_state.type):
+                if self.mcts.get_act(i) != None:
+                    action=self.mcts.get_act(i)
+                    k+=1
+                    if self.game_state.name == 'go':
+                        if action in self.game_state.empty_positions or action==(-1,-1):    # to avoid 'NoneType' error
+                            next_state = self.game_state.move(action)
+                            child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[i],mcts=self.mcts)
+                            self.children.append(child)
+                    else:
+                        move = self.game_state.coord_to_move(action)
+                        if action != None and move != None:
+                            next_state = self.game_state.move(move[0], action, self.game_state.player_id) # action = targetCell
+                            child = Node(next_state,self.args, parent=self, p_action=action, prior_prob=p[i],mcts=self.mcts)
+                            self.children.append(child)
     
     def backprop(self, v):
         self.total_action_value  += v
@@ -99,15 +122,30 @@ class MCTS:
         return tind
     
     def map_act(self):
-        list=[]
-        for i in range(len(self.game_state.board)):
-            for j in range(len(self.game_state.board[0])):
-                list.append((i,j))
-        list.append((-1,-1))    # adaptar para attaxx
+        list = []
+        if self.game_state.name=='attaxx':
+            '''
+            attaxx_possible = self.game_state.check_possible_moves()
+            for i in range(len(attaxx_possible)):
+                list.append(attaxx_possible.pop()[1])
+            return list
+            '''
+            print(self.game_state.board)
+            for i in range(len(self.game_state.board)):
+                for j in range(len(self.game_state.board)):
+                    if self.game_state.board[j][i]==0:
+                        list.append((i,j))
+                    else:
+                        list.append(None)
+        else:
+            for i in range(len(self.game_state.board)):
+                for j in range(len(self.game_state.board[0])):
+                        list.append((i,j))
+            list.append((-1,-1))    # adaptar para attaxx
         return list
 
     def get_act(self,_):
-        return  self.map[_]
+        return self.map[_]
     
     def cut(self,action):
         for child in self.root.children:
@@ -196,5 +234,6 @@ class MCTS:
             self.cut(played) # new root node is the child corresponding to the played action
             #self.printTree(self.root)
             print(f"Play chosen: {played}")
+            #print(self.game_state.board)
             self.play_idx+=1
             return played,pol
