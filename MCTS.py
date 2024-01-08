@@ -160,8 +160,18 @@ class MCTS:
                 p, v = self.model.net.predict(np.array([board]),batch_size=1,verbose=0)
                 #print('depois ',time.time(),' ',_)
                 p=p[0]
+                
+                ant_p=p
+                
                 v=v[0][0]
-                p=0.75*p+0.25*np.random.dirichlet([0.2])[0] # adding Dirichlet noise to root's prior 
+                if self.play_idx-1>self.ti or self.evaluate:
+                    p=0.75*p+0.25*np.random.dirichlet([0.2])[0] # adding Dirichlet noise to root's prior 
+
+                nov_p=p
+                diff=nov_p-ant_p
+                razao=diff/ant_p
+                print(f'diferença: {diff} \nrazao: {razao}')
+
                 node.expand(p) # adding children with policy from the NN to list children
             
             # backpropagate
