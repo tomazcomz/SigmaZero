@@ -84,7 +84,6 @@ class MCTS:
         self.play_idx=0
 
     def setind(self,game):
-        tind=10**(-4)
         if game.type==0:
             match len(game.board):
                 case 4:
