@@ -81,7 +81,6 @@ class MCTS:
         self.root=Node(self.game_state, self.args,self)
         self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
         self.map=self.map_act()
-        self.play_idx=0
 
     def setind(self,game):
         if game.type==0:
@@ -164,13 +163,13 @@ class MCTS:
                 ant_p=p
                 
                 v=v[0][0]
-                if self.play_idx-1>self.ti or self.evaluate:
+                if self.root.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*np.random.dirichlet([0.2])[0] # adding Dirichlet noise to root's prior 
 
                 nov_p=p
                 diff=nov_p-ant_p
                 razao=diff/ant_p
-                print(f'diferença: {diff} \nrazao: {razao}')
+                print(f'{self.root.play_idx}\ndiferença: {diff} \nrazao: {razao}')
 
                 node.expand(p) # adding children with policy from the NN to list children
             
@@ -180,7 +179,7 @@ class MCTS:
         
         #self.printTree(self.root)
 
-        if self.play_idx-1<=self.ti and not self.evaluate:
+        if self.root.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
             temp=10**(-2)
