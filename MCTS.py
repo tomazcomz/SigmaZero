@@ -168,7 +168,7 @@ class MCTS:
 
                 nov_p=p
                 diff=nov_p-ant_p
-                razao=diff/ant_p
+                razao=np.divide(diff,ant_p)
                 print(f'{self.root.play_idx}\ndiferença: {diff} \nrazao: {razao}')
 
                 node.expand(p) # adding children with policy from the NN to list children
