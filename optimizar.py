@@ -25,7 +25,9 @@ def create_train_set(game,bs=256):
 def sptrainprocd(game,policy,alphaname):
     tag=f'{alphaname}_{time.time()}'
     pfile=f'{game.name}/{len(game.board)}/datasets/policies/{tag}.txt'
-    pickle.dump( gen_batch(game), open( f"{game.name}/{len(game.board)}/datasets/boards/{tag}.pkl", "wb" ) )
+    if game.name=='go':
+        game = gen_batch(game)
+    pickle.dump(game, open( f"{game.name}/{len(game.board)}/datasets/boards/{tag}.pkl", "wb" ) )
     np.savetxt(pfile,policy)
     return tag
 

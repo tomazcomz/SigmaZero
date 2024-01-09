@@ -22,6 +22,7 @@ class GameState:
         self.parentPlay = None  # (play, movtype)
         self.parentCell = None
         self.n = len(board)
+        self.empty_positions = self.check_possible_moves()
     
     def createChildren(self, player_id):
         differentPlayBoards = []
@@ -66,10 +67,12 @@ class GameState:
         return possible_moves
     
     def is_game_finished(self):
-        is_finished,_,_ = _objective_test(self,self.player_id)
-        if is_finished  == -2:
+        if len(self.empty_positions) == 0:
+            is_finished,_,_ = _objective_test(self,self.player_id)
+            self.end = is_finished
+            return True
+        else:
             return False
-        return True
     
     def coord_to_move(self, targetCell):
        possible_origins = set()
@@ -94,6 +97,7 @@ class GameState:
             newBoard[targetCell[1]][targetCell[0]] = player_id
             newBoard[initialCell[1]][initialCell[0]] = 0
             newBoard = get_and_apply_adjacent(targetCell, newBoard, player_id)
+        self.empty_positions = self.check_possible_moves()
         newGame = GameState(newBoard, -player_id)
         return newGame
     
@@ -309,25 +313,28 @@ def agent_v_agent(game, alphai, alphas, sp=False):
     while game.end==-2:
         if player_id==1:
             print("PLAYER 1 TURN")
-            action = game.coord_to_move(alphai.play()[0])
+            action_policy = alphai.play()
+            action = game.coord_to_move(action_policy[0])
         else:
             print("PLAYER 2 TURN")
-            action = game.coord_to_move(alphas.play()[0])
+            action_policy = alphas.play()
+            action = game.coord_to_move(action_policy[0])
         print(game.check_possible_moves())
         print(action in game.check_possible_moves())
         if action not in game.check_possible_moves():    # checks if move is valid
             continue    # if not, it expects another event from the same player
-        player_id = -player_id
         game = game.move(action[0], action[1], player_id)
+        player_id = -player_id
+        print(game.board)
         if game.is_game_finished():
             game.end=objective_test(game, player_id)
         if (sp):
-            fname=optimizar.sptrainprocd(game.board,alphas.name)
+            fname=optimizar.sptrainprocd(game,action_policy[1],alphas.model.name)
             labellist.append(fname)
          # to display the winner
     if game.end != -2:
         if sp:
-            optimizar.labelmaking(labellist,game.end)
+            optimizar.labelmaking(game,labellist,game.end)
         return game.end
 
 def convert_to_six_by_six(board):
