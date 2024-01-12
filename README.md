@@ -26,3 +26,7 @@ This is the LabIACD Group 7's second project AlphaZero repository. File structur
 ## Concerns regarding model building, training and execution:
 
     - Procedures needed to be executed in order to successfuly train the agent other than the especified folder structure already mentioned are documented in their respective files. The main files for execution will be treino.ipynb and server/agent files. The former requires some steps for initialization and the latter requires only the model weightes already included in this delivery package.
+
+## Important Notices:
+
+    - Information regarding model files and results are detailed in the final delivery notebook.

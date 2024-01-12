@@ -42,7 +42,10 @@ class Node:
         if not self.fully_expanded():
             return self
         selected = max(self.children, key=lambda child: self.ucb(child))
-        return selected.select()
+        try:
+            return selected.select()
+        except RecursionError:
+            return selected
     
     def cpuct(self, visit_count): # defining cpuct according to paper
         return math.log((visit_count+19652+1)/19652)+self.args['cpuct']
@@ -70,7 +73,10 @@ class Node:
         self.total_action_value  += v
         self.visit_count += 1
         if self.parent is not None:
-            self.parent.backprop(v)
+            try:
+                self.parent.backprop(v)
+            except RecursionError:
+                return
 
 class MCTS:
     def __init__(self, game_state, args, model,eva=False):
@@ -103,8 +109,7 @@ class MCTS:
         for i in range(len(self.game_state.board)):
             for j in range(len(self.game_state.board[0])):
                 list.append((i,j))
-        if (self.game_state.type==1):
-            list.append((-1,-1))
+        list.append((-1,-1))    # adaptar para attaxx
         return list
 
     def get_act(self,_):
