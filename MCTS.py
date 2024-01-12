@@ -99,10 +99,15 @@ class MCTS:
     
     def map_act(self):
         list=[]
-        for i in range(len(self.game_state.board)):
-            for j in range(len(self.game_state.board[0])):
-                list.append((i,j))
-        list.append((-1,-1))    # adaptar para attaxx
+        if self.game_state.name=='attaxx':
+            for i in range(len(self.game_state.board)):
+                for j in range(len(self.game_state.board[0])):
+                    list.append((j,i))
+        else:
+            for i in range(len(self.game_state.board)):
+                for j in range(len(self.game_state.board[0])):
+                    list.append((i,j))
+            list.append((-1,-1))
         return list
 
     def get_act(self,_):
