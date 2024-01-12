@@ -37,7 +37,7 @@ def avaliar(games):
     for i in range(40):
         if scount>=(icount+10):
             break
-        teta_i=Neura(game,name=get_best_name(game))
+        teta_i=Neura(game,name='acaciogo719')
         teta_i.compilar()
         alpha_i=MCTS(game,ARGS,teta_i,True)
         teta_s=Neura(game,name='best/'+get_best_name(game))

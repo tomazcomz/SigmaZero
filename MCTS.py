@@ -150,26 +150,28 @@ class MCTS:
             
             # expand and evaluate
             if not terminal:
+                
                 #print('antes convert ',time.time())
                 if self.game_state.type==1:
                     board=gen_batch(node.game_state)
                 else:
                     board=node.game_state.board
                 #print('convert ',time.time())
+                #print(board)
                 p, v = self.model.net.predict(np.array([board]),batch_size=1,verbose=0)
                 #print('depois ',time.time(),' ',_)
                 p=p[0]
                 
-                ant_p=p
-                
+                #ant_p=p
+                #print(f'{p} old')
                 v=v[0][0]
                 if self.root.play_idx-1>self.ti or self.evaluate:
-                    p=0.75*p+0.25*np.random.dirichlet([0.2])[0] # adding Dirichlet noise to root's prior 
-
-                nov_p=p
+                    p=0.75*p+0.25*np.random.dirichlet([0.2,0.2,0.2])[0] # adding Dirichlet noise to root's prior 
+                #print(f'{p} new')
+                """ nov_p=p
                 diff=nov_p-ant_p
-                razao=np.divide(diff,ant_p)
-                print(f'{self.root.play_idx}\ndiferença: {diff} \nrazao: {razao}')
+                razao=np.divide(diff,ant_p) """
+                #print(f'{self.root.play_idx}\ndiferença: {diff} \nrazao: {razao}')
 
                 node.expand(p) # adding children with policy from the NN to list children
             
@@ -182,7 +184,7 @@ class MCTS:
         if self.root.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
-            temp=10**(-2)
+            temp=10**(-4)
 
         for child in self.root.children:
             # print(child.p_action)
@@ -193,7 +195,7 @@ class MCTS:
             elif child.visit_count == 1:
                 self.pi[self.map.index(child.p_action)] = 0.1
             else: 
-                self.pi[self.map.index(child.p_action)] = node.visit_count**(1/temp)/child.visit_count**(1/temp)
+                self.pi[self.map.index(child.p_action)] = (child.visit_count**(1/temp))/((self.root.visit_count)**(1/temp))
         
         pol=self.pi
         max_prob_index=self.get_play()

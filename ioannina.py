@@ -47,7 +47,7 @@ class Neura:
 
     # Se calhar devíamos adaptar o kernel size, devido as dimensões do tabuleiro
     def convblock(self,input,nf):
-        c=layers.Conv2D(nf,3,(1,1),'same')(input)
+        c=layers.Conv2D(nf,3,(1,1),'same',kernel_regularizer=regularizers.L2(0.0001))(input)
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         return rnl
@@ -60,7 +60,7 @@ class Neura:
 
     def resblock(self,input,i,nf):
         cb=self.convblock(input,nf)
-        c=layers.Conv2D(nf,3,(1,1),'same')(cb)
+        c=layers.Conv2D(nf,3,(1,1),'same',kernel_regularizer=regularizers.L2(0.0001))(cb)
         b=layers.BatchNormalization()(c)
         s=layers.Add()([b,input])
         rnl=layers.Activation(activation='softplus',name=f'endrestower{i}')(s)
@@ -75,7 +75,7 @@ class Neura:
         return rnl
 
     def polhead(self,input):
-        c=layers.Conv2D(2,1,(1,1),'same',name='convpol')(input)
+        c=layers.Conv2D(2,1,(1,1),'same',name='convpol',kernel_regularizer=regularizers.L2(0.0001))(input)
         b=layers.BatchNormalization(name='bnpol')(c)
         rnl=layers.Activation(activation='softplus',name='rnlpol')(b)
         flt=layers.Flatten(name='polflat')(rnl)
@@ -83,7 +83,7 @@ class Neura:
         return fc
 
     def valhead(self,input,nf):
-        c=layers.Conv2D(1,1,(1,1),'same')(input)
+        c=layers.Conv2D(1,1,(1,1),'same',kernel_regularizer=regularizers.L2(0.0001))(input)
         b=layers.BatchNormalization()(c)
         rnl=layers.Activation(activation='softplus')(b)
         flt=layers.Flatten()(rnl)
