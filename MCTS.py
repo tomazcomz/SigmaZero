@@ -185,7 +185,12 @@ class MCTS:
             temp=1
         else:
             temp=10**(-2)
-
+        sumb=0
+        for child in self.root.children:
+            if child is None or child.visit_count==0:
+                continue
+            else:
+                sumb+=(child.visit_count)**(1/temp)
         for child in self.root.children:
             # print(child.p_action)
             if child is None:
@@ -197,7 +202,7 @@ class MCTS:
                 self.pi[self.map.index(child.p_action)] = 0.1
             else: 
                 #print(self.root.visit_count,' ',child.visit_count)
-                self.pi[self.map.index(child.p_action)] = (child.visit_count**(1/temp))/((self.root.visit_count)**(1/temp))
+                self.pi[self.map.index(child.p_action)] = (child.visit_count**(1/temp))/(sumb)
         
         pol=self.pi
         #print(pol)
