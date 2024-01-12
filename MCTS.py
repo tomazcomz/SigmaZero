@@ -184,20 +184,23 @@ class MCTS:
         if self.root.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
-            temp=10**(-4)
+            temp=10**(-2)
 
         for child in self.root.children:
             # print(child.p_action)
             if child is None:
+                #print('hey')
                 continue
             if child.visit_count == 0:
                 self.pi[self.map.index(child.p_action)] = 0
             elif child.visit_count == 1:
                 self.pi[self.map.index(child.p_action)] = 0.1
             else: 
+                #print(self.root.visit_count,' ',child.visit_count)
                 self.pi[self.map.index(child.p_action)] = (child.visit_count**(1/temp))/((self.root.visit_count)**(1/temp))
         
         pol=self.pi
+        #print(pol)
         max_prob_index=self.get_play()
         if max_prob_index == self.game_state.n**2:
             self.cut((-1,-1))
