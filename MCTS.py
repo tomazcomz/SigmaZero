@@ -2,6 +2,7 @@ import math
 import numpy as np
 from go.inputconverter import *
 import time
+import decimal
 """ 
 select, expand and evaluate, backup, play
 
@@ -77,7 +78,7 @@ class MCTS:
         self.args=args
         self.model=model
         self.evaluate=eva
-        self.ti=self.setind(game_state)            # ver * em ideias.md
+        self.ti=self.setind(game_state)
         self.root=Node(self.game_state, self.args,self)
         self.pi=np.zeros(self.game_state.n**2+self.game_state.type)
         self.map=self.map_act()
@@ -102,7 +103,8 @@ class MCTS:
         for i in range(len(self.game_state.board)):
             for j in range(len(self.game_state.board[0])):
                 list.append((i,j))
-        list.append((-1,-1))    # adaptar para attaxx
+        if (self.game_state.type==1):
+            list.append((-1,-1))
         return list
 
     def get_act(self,_):
@@ -136,11 +138,8 @@ class MCTS:
         return random.choice(ind)
     
     def play(self):
-        #print('antes ',time.time())
         for _ in range(self.args['num_searches']):
-            #print('inicio ',time.time())
             node=self.root
-            #print(_)
             # selection
             while node.fully_expanded():
                 node=node.select()
@@ -150,69 +149,49 @@ class MCTS:
             
             # expand and evaluate
             if not terminal:
-                
-                #print('antes convert ',time.time())
                 if self.game_state.type==1:
                     board=gen_batch(node.game_state)
                 else:
                     board=node.game_state.board
-                #print('convert ',time.time())
-                #print(board)
                 p, v = self.model.net.predict(np.array([board]),batch_size=1,verbose=0)
-                #print('depois ',time.time(),' ',_)
                 p=p[0]
-                
-                #ant_p=p
-                #print(f'{p} old')
                 v=v[0][0]
                 if self.root.play_idx-1>self.ti or self.evaluate:
                     p=0.75*p+0.25*np.random.dirichlet([0.2,0.2,0.2])[0] # adding Dirichlet noise to root's prior 
-                #print(f'{p} new')
-                """ nov_p=p
-                diff=nov_p-ant_p
-                razao=np.divide(diff,ant_p) """
-                #print(f'{self.root.play_idx}\ndiferença: {diff} \nrazao: {razao}')
 
                 node.expand(p) # adding children with policy from the NN to list children
             
             # backpropagate
             node.backprop(v)
-        #print('fim ',time.time())
-        
-        #self.printTree(self.root)
 
         if self.root.play_idx-1<=self.ti and not self.evaluate:
             temp=1
         else:
             temp=10**(-2)
-        sumb=0
+        sumb=decimal.Decimal(0)
         for child in self.root.children:
             if child is None or child.visit_count==0:
                 continue
             else:
-                sumb+=(child.visit_count)**(1/temp)
+                sumb+=(decimal.Decimal(child.visit_count)**decimal.Decimal(1/temp))
+                    
         for child in self.root.children:
-            # print(child.p_action)
             if child is None:
-                #print('hey')
                 continue
             if child.visit_count == 0:
                 self.pi[self.map.index(child.p_action)] = 0
             elif child.visit_count == 1:
                 self.pi[self.map.index(child.p_action)] = 0.1
             else: 
-                #print(self.root.visit_count,' ',child.visit_count)
-                self.pi[self.map.index(child.p_action)] = (child.visit_count**(1/temp))/(sumb)
+                self.pi[self.map.index(child.p_action)] = (float)((decimal.Decimal(child.visit_count)**decimal.Decimal((1/temp)))/(sumb))
         
         pol=self.pi
-        #print(pol)
         max_prob_index=self.get_play()
         if max_prob_index == self.game_state.n**2:
             self.cut((-1,-1))
             return (-1, -1),pol     # definir isto como "pass"
         else:
             played=((max_prob_index // self.game_state.n), (max_prob_index % self.game_state.n))    # converter indice de array 1D em coordenadas de array 2D
-            #self.printTree(self.root)
-            print(f"Play chosen: {played}")
+            print(f"Play chosen: {played}") # apenas para propósitos de análise
             self.cut(played) # new root node is the child corresponding to the played action
             return played,pol

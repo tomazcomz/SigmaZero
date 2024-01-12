@@ -8,6 +8,7 @@ ARGS = {
     'num_searches': 100
 }
 
+# Funções para criação de tabuleiro inicial e jogo  
 
 def makegame(games: str): # creates gamestate
     if games=='A4x4':
@@ -30,6 +31,8 @@ def agent_v_agent(game,alphai,alphas,sp=False):
         return Attaxx.agent_v_agent(game,alphai,alphas,sp)
     return Go.agent_v_agent(game,alphai,alphas,sp)
 
+
+# Função de avaliação
 def avaliar(games):
     game=makegame(games)
     icount=0

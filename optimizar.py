@@ -3,6 +3,8 @@ import time
 from go.inputconverter import *
 import pickle
 
+
+# Função para criar DataSets de treino
 def create_train_set(game,bs=256):
     x,yp,yv=[],[],[]
     # x <- board
@@ -21,7 +23,7 @@ def create_train_set(game,bs=256):
         yv.append(lf)
     return x,yp,yv
 
-
+# Funções para guardar informação para treino
 def sptrainprocd(game,policy,alphaname):
     tag=f'{alphaname}_{time.time()}'
     pfile=f'{game.name}/{len(game.board)}/datasets/policies/{tag}.txt'
@@ -35,11 +37,11 @@ def labelmaking(game,list,winner):
         with open(file, 'w') as f:
             f.write(str(winner))
 
+# Função de treino: algumas alterações são necessárias para a primeira iteração
 def train(game):
     #rede=Neura(game,name=get_best_name(game))
     rede=Neura(game,name='acacio')
     rede.compilar()
-    #callback = keras.callbacks.EarlyStopping(monitor='loss',patience=2,restore_best_weights=True)
     for i in range(10):
         x,yp,yv=create_train_set(game)
         history=rede.net.fit(np.array(x),[np.array(yp),np.array(yv)],verbose=1,batch_size=32)
