@@ -3,6 +3,8 @@
 
 This is the LabIACD Group 7's second project AlphaZero repository. File structure, dependencies and necessary procedures to its workings are described below.
 
+The link to the video presentation is as follows: https://youtu.be/cwbPYyzKREw
+
 ## File Structure:
 
 ### [game name] Folders:
