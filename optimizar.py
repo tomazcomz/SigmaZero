@@ -39,8 +39,7 @@ def labelmaking(game,list,winner):
 
 # Função de treino: algumas alterações são necessárias para a primeira iteração
 def train(game):
-    #rede=Neura(game,name=get_best_name(game))
-    rede=Neura(game,name='acacio')
+    rede=Neura(game,name=get_best_name(game))
     rede.compilar()
     for i in range(10):
         x,yp,yv=create_train_set(game)
